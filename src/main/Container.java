@@ -1,9 +1,4 @@
-package containers;
-
-import main.JavaClass;
-import main.JavaObject;
-import main.JavaPackage;
-import main.Project;
+package main;
 
 import java.util.ArrayList;
 

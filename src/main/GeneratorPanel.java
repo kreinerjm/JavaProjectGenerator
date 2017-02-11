@@ -1,6 +1,5 @@
 package main;
 
-import containers.Container;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
