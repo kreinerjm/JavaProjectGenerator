@@ -15,6 +15,23 @@ public class Container
     Container contains;
     ArrayList<Container> containers = new ArrayList<>();
     Container parent;
+    Container extended = null;
+
+    public void setExtended(Container c)
+    {
+        extended = c;
+    }
+
+    public boolean hasExtended()
+    {
+        if(extended == null)
+            return false;
+        return true;
+    }
+    public Container getExtended()
+    {
+        return extended;
+    }
 
     public boolean isEditing() {
         return editing;
@@ -78,6 +95,37 @@ public class Container
             return true;
         }
         return false;
+    }
+
+    public boolean classContainsBottom(int x, int y)
+    {
+        int circleY = this.y + height;
+        int a = Math.abs(x-getBottomMidpoint()[0]);
+        int b = Math.abs(y-getBottomMidpoint()[1]);
+        int distance = (int)Math.sqrt(a*a+b*b);
+        //System.out.println(distance);
+        if(distance <= 5 && y > circleY){
+            return true;
+        }
+        return false;
+    }
+
+    public boolean classContainsTop(int x, int y)
+    {
+        int circleY = this.y;
+        int a = Math.abs(x-getBottomMidpoint()[0]);
+        int b = Math.abs(y-this.y);
+        int distance = (int)Math.sqrt(a*a+b*b);
+        System.out.println(distance);
+        if(distance <= 5 && y < circleY){
+            return true;
+        }
+        return false;
+    }
+
+    public int[] getBottomMidpoint()
+    {
+        return new int[]{x + width/2,y + height};
     }
 
     public String getLabel() {

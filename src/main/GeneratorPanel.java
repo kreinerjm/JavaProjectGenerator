@@ -14,6 +14,9 @@ import java.util.ArrayList;
 class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
     public enum View {Overview,Package,Class,Method}
+    public enum MouseContext {ContainerMove,ClassExtension}
+    int lineX,lineY;
+    MouseContext mouseContext;
     View view;
     int tickNum = 0;
     private final char[] alphabet = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
@@ -58,6 +61,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         tickNum++;
         repaint();
     }
+
     public void paint(Graphics g)
     {
         Graphics2D g2d = (Graphics2D) g;
@@ -102,6 +106,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         }
         else
         {
+
             for(Container c : currentContainer.getContainers())
             {
                 if(!c.equals(focusContainer) && c.isEditing())
@@ -110,7 +115,21 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 if(c.getContains() instanceof JavaPackage)
                     b2d.setColor(Color.blue);
                 if(c.getContains() instanceof JavaClass)
+                {
+                    b2d.setColor(Color.black);
+                    if(c.hasExtended())
+                    {
+                        Container target = c.getExtended();
+                        b2d.drawLine(c.getX()+c.getWidth()/2,c.getY(),target.getX()+target.getWidth()/2,target.getY()+target.getHeight());
+                    }
                     b2d.setColor(Color.red);
+                    int topEdge = c.getY();
+                    int bottomEdge = topEdge + c.getWidth();
+                    int xPos = c.getX() + c.getWidth()/2;
+                    int offset = 5;
+                    b2d.fillOval(xPos-offset,topEdge-offset,10,10);
+                    b2d.fillOval(xPos-offset,bottomEdge-offset,10,10);
+                }
                 if(c.getContains() instanceof Method)
                     b2d.setColor(Color.green);
 
@@ -148,7 +167,10 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
         b2d.drawString(currentContainer.getLabel(),stringX,stringY);
 
-
+        if(mouse && mouseContext == MouseContext.ClassExtension)
+        {
+            b2d.drawLine(focusContainer.getBottomMidpoint()[0],focusContainer.getBottomMidpoint()[1],lineX,lineY);
+        }
 
         g2d.drawImage(buffer,0,0,buffer.getWidth(),buffer.getHeight(),null);
     }
@@ -157,10 +179,26 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
     private void handleMouse()
     {
         if(mouse) {
-            int x = (int) getMousePosition().getX();
-            int y = (int) getMousePosition().getY();
-            focusContainer.setX(x - offsetX);
-            focusContainer.setY(y - offsetY);
+            int x,y;
+            switch(mouseContext)
+            {
+                case ClassExtension:
+                    x = (int) getMousePosition().getX();
+                    y = (int) getMousePosition().getY();
+                    lineX = x;
+                    lineY = y;
+                    //System.out.println("CLASS EXTENSION");
+                    break;
+                case ContainerMove:
+                    x = (int) getMousePosition().getX();
+                    y = (int) getMousePosition().getY();
+                    focusContainer.setX(x - offsetX);
+                    focusContainer.setY(y - offsetY);
+                    break;
+                default:
+                    break;
+            }
+
         }
     }
 
@@ -231,13 +269,37 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 mouse = true;
                 offsetX = e.getX() - c.getX();
                 offsetY = e.getY() - c.getY();
+                mouseContext = MouseContext.ContainerMove;
+            }
+            else if(c.getContains() instanceof JavaClass && c.classContainsBottom(e.getX(),e.getY()))
+            {
+                focusContainer = c;
+                mouse = true;
+                offsetX = e.getX() - c.getX();
+                offsetY = e.getY() - c.getY();
+                mouseContext = MouseContext.ClassExtension;
+                //System.out.println("CONTAINED");
             }
         }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        if(mouse && mouseContext == MouseContext.ClassExtension)
+        {
+            for(Container c : currentContainer.getContainers())
+            {
+                if(c.classContainsTop(e.getX(),e.getY()))
+                {
+                    JavaClass jc = (JavaClass) c.getContains();
+                    c.setExtended(focusContainer);
+                    jc.setExtends("");
+                    c.setContains(jc);
+                }
+            }
+        }
         mouse = false;
+
     }
 
     @Override
