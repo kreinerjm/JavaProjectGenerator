@@ -7,6 +7,7 @@ import java.util.ArrayList;
  */
 public class Container
 {
+    String path;
     String label;
     int width;
     int height;
@@ -76,6 +77,26 @@ public class Container
         y = 0;
         width = 10;
         height = 10;
+    }
+
+    public String getPath()
+    {
+        String toRet = "";
+        Container current = this;
+        while(current.hasParent())
+        {
+            toRet = current.getLabel() +"/"+ toRet;
+            current = current.getParent().getContains();
+        }
+        toRet = Project.path + toRet;
+        return toRet;
+    }
+
+    public boolean hasParent()
+    {
+        if(this instanceof Project)
+            return false;
+        return true;
     }
 
     public void setContains(Container c)

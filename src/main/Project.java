@@ -14,6 +14,7 @@ public class Project extends Container{
     {
         this.projectName = projectName;
         this.path = path;
+        this.label = this.projectName;
     }
 
     public String getName()

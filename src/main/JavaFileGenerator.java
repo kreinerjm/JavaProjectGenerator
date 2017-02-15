@@ -15,7 +15,7 @@ public class JavaFileGenerator {
     public void generateJavaFile(JavaClass jc)
     {
         methodGenerator = new MethodGenerator();
-        try(Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(jc.className+".java"), "utf-8")))
+        try(Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(jc.getPath().substring(0,jc.getPath().length()-1)+".java"), "utf-8")))
         {
             //generate imports
 
@@ -40,7 +40,7 @@ public class JavaFileGenerator {
             //Close Class
             writer.write("\n}");
 
-        }catch(Exception e){}
+        }catch(Exception e){System.out.println("error on path : "+jc.getPath()+".java");}
 
     }
 

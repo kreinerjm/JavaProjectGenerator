@@ -29,4 +29,9 @@ public class JavaClass extends Container {
         classExtended = s;
     }
 
+    public String getClassExtended()
+    {
+        return classExtended;
+    }
+
 }

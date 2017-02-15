@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
+    ProjectGenerator generator;
     public enum View {Overview,Package,Class,Method}
     public enum MouseContext {ContainerMove,ClassExtension}
     int lineX,lineY;
@@ -210,6 +211,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                     case AddPackage: {
                         if (view == View.Package || view == View.Overview) {
                             JavaPackage newPackage = new JavaPackage("");
+                            newPackage.setParent(currentContainer);
                             Container newContainer = new Container("", 0, 0, 50, 50);
                             newContainer.setContains(newPackage);
                             currentContainer.addContainer(newContainer);
@@ -221,6 +223,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                     case AddClass: {
                         if (view == View.Package) {
                             JavaClass newClass = new JavaClass("");
+                            newClass.setParent(currentContainer);
                             Container newContainer = new Container("", 0, 0, 50, 50);
                             newContainer.setContains(newClass);
                             currentContainer.addContainer(newContainer);
@@ -250,7 +253,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                         break;
                     }
                     case GenerateProject: {
-
+                        generator = new ProjectGenerator(overview);
                         break;
                     }
 
@@ -271,7 +274,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 offsetY = e.getY() - c.getY();
                 mouseContext = MouseContext.ContainerMove;
             }
-            else if(c.getContains() instanceof JavaClass && c.classContainsBottom(e.getX(),e.getY()))
+            else if(c.getContains() instanceof JavaClass && c.classContainsBottom(e.getX(), e.getY()))
             {
                 focusContainer = c;
                 mouse = true;
@@ -342,6 +345,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             if(e.getKeyCode() == KeyEvent.VK_ENTER)
             {
                 focusContainer.setEditing(false);
+                focusContainer.getContains().setLabel(focusContainer.getLabel());
             }
             if (shift) {
                 if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
