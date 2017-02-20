@@ -7,11 +7,11 @@ import java.util.ArrayList;
  */
 public class Method extends JavaObject {
 
-    public static enum Access {Public,Private};
-
     String returnType;
     Access accessModifier;
-    boolean isStatic;
+    boolean isStatic = false;
+    boolean isFinal = false;
+    boolean isAbstract = false;
     String identifier;
     ArrayList<Variable> methodParameters = new ArrayList<>();
 
@@ -29,6 +29,37 @@ public class Method extends JavaObject {
     {
         identifier = id;
     }
+
+    public boolean isAbstract()
+    {
+        return isAbstract;
+    }
+
+    public void setAbstract(boolean b)
+    {
+        isAbstract = b;
+    }
+
+    public boolean isFinal()
+    {
+        return isFinal;
+    }
+
+    public void setFinal(boolean b)
+    {
+        isFinal = b;
+    }
+
+    public boolean isStatic()
+    {
+        return isStatic;
+    }
+
+    public void setStatic(boolean b)
+    {
+        isStatic = b;
+    }
+
 
 
 

@@ -5,6 +5,7 @@ package main;
  */
 public class JavaObject
 {
+    public enum Access {Public,Private};
     Container container;
     String label;
 

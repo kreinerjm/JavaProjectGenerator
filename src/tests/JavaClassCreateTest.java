@@ -15,11 +15,11 @@ public class JavaClassCreateTest
     public static void main(String[] args)
     {
         ArrayList<Variable> classVariables = new ArrayList<>();
-        classVariables.add(new Variable("int","n",false));
-        classVariables.add(new Variable("String","testString",false));
+        classVariables.add(new Variable("int","n"));
+        classVariables.add(new Variable("String","testString"));
         ArrayList<Variable> methodParameters = new ArrayList<>();
         ArrayList<Method> methods = new ArrayList<>();
-        methodParameters.add(new Variable("String[]","args",false));
+        methodParameters.add(new Variable("String[]","args"));
         Method method = new Method(Method.Access.Public,true,"void","main",methodParameters);
         Method method2 = new Method(Method.Access.Private,false,"int","getN",null);
         methods.add(method);

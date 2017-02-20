@@ -38,6 +38,13 @@ public class Inspector
         }
         else if(jo instanceof JavaPackage)
         {
+            int fontSize = 20;
+            while(b2d.getFontMetrics().stringWidth(focusContainer.getPath()) > width-20)
+            {
+                fontSize--;
+                b2d.setFont(new Font("Serif",Font.BOLD, fontSize));
+            }
+            drawRelativeString(focusContainer.getPath(), 10, 40, b2d);
 
         }
         else if(jo instanceof JavaClass)
@@ -47,9 +54,14 @@ public class Inspector
                 drawRelativeString("Extends: "+jc.getClassExtended().getLabel(),10,40,b2d);
             else
                 drawRelativeString("Extends: None",10,40,b2d);
+            drawRelativeString("Abstract : "+jc.isAbstract(), 10, 60, b2d);
         }
         else if(jo instanceof Method)
         {
+            Method m = (Method) jo;
+            drawRelativeString("Abstract : "+m.isAbstract(), 10, 40, b2d);
+            drawRelativeString("Static : "+m.isStatic(), 10, 60, b2d);
+            drawRelativeString("Final : "+m.isFinal(), 10, 80, b2d);
 
         }
         else if(jo instanceof Variable)

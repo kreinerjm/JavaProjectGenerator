@@ -12,8 +12,8 @@ public class JavaClass extends JavaObject {
     ArrayList<Variable> classVariables = new ArrayList<>();
     JavaClass classExtended;
     ArrayList<String> interfacesImpemented = new ArrayList<>();
+    boolean isAbstract = false;
     String className;
-    Package parent;
 
     public JavaClass(String className, ArrayList<Method> methods, ArrayList<Variable> classVariables) {
         this.methods = methods;
@@ -23,6 +23,16 @@ public class JavaClass extends JavaObject {
 
     public JavaClass(String className) {
         this.className = className;
+    }
+
+    public void setAbstract(boolean b)
+    {
+        isAbstract = b;
+    }
+
+    public boolean isAbstract()
+    {
+        return isAbstract;
     }
 
     public void setClassExtended(JavaClass jc)

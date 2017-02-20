@@ -8,15 +8,14 @@ public class Variable extends JavaObject {
 
 
     String type;
-    boolean isInitialized;
+    boolean isFinal = false;
+    boolean isStatic = false;
     String identifier;
-    Container parent;
 
-    public Variable(String type, String identifier, boolean isInitialized)
+    public Variable(String type, String identifier)
     {
         this.type = type;
         this.identifier = identifier;
-        this.isInitialized = isInitialized;
     }
 
     public Variable(String id)
