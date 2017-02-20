@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * Created by Jacob on 1/27/2017.
  */
-public class Method extends Container {
+public class Method extends JavaObject {
 
     public static enum Access {Public,Private};
 

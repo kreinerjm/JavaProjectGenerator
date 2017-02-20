@@ -5,11 +5,12 @@ import java.util.ArrayList;
 /**
  * Created by Jacob on 1/27/2017.
  */
-public class JavaClass extends Container {
+public class JavaClass extends JavaObject {
 
+    String path;
     ArrayList<Method> methods = new ArrayList<>();
     ArrayList<Variable> classVariables = new ArrayList<>();
-    String classExtended = "";
+    JavaClass classExtended;
     ArrayList<String> interfacesImpemented = new ArrayList<>();
     String className;
     Package parent;
@@ -24,14 +25,36 @@ public class JavaClass extends Container {
         this.className = className;
     }
 
-    public void setExtends(String s)
+    public void setClassExtended(JavaClass jc)
     {
-        classExtended = s;
+        classExtended = jc;
     }
 
-    public String getClassExtended()
+    public JavaClass getClassExtended()
     {
         return classExtended;
+    }
+
+    public boolean hasClassExtended()
+    {
+        if(classExtended == null)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    public void setPath(String s)
+    {
+        path = s;
+    }
+
+    public String getPath()
+    {
+        return path;
     }
 
 }

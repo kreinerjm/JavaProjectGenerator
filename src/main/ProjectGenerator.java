@@ -19,8 +19,7 @@ public class ProjectGenerator
     Container overview;
     public ProjectGenerator(Container start)
     {
-
-                overview = start;
+        overview = start;
         parse(start);
         generateProject();
     }
@@ -44,7 +43,7 @@ public class ProjectGenerator
 
     public void getInfo(Container c)
     {
-        Container needsInfo = c.getContains();
+        JavaObject needsInfo = c.getContains();
         if(needsInfo instanceof Project)
         {
             myProject = (Project) needsInfo;
@@ -61,7 +60,6 @@ public class ProjectGenerator
 
     public void generatePackages()
     {
-
         for(JavaPackage jp : packages)
         {
             System.out.println(jp.getPath());

@@ -7,32 +7,14 @@ import java.util.ArrayList;
  */
 public class Container
 {
-    String path;
     String label;
     int width;
     int height;
     int x;
     int y;
-    Container contains;
+    JavaObject contains;
     ArrayList<Container> containers = new ArrayList<>();
     Container parent;
-    Container extended = null;
-
-    public void setExtended(Container c)
-    {
-        extended = c;
-    }
-
-    public boolean hasExtended()
-    {
-        if(extended == null)
-            return false;
-        return true;
-    }
-    public Container getExtended()
-    {
-        return extended;
-    }
 
     public boolean isEditing() {
         return editing;
@@ -57,7 +39,7 @@ public class Container
         return containers;
     }
 
-    public Container getContains() { return contains; }
+    public JavaObject getContains() { return contains; }
 
     boolean editing = false;
 
@@ -70,15 +52,6 @@ public class Container
         this.height = height;
     }
 
-    public Container()
-    {
-        label = "";
-        x = 0;
-        y = 0;
-        width = 10;
-        height = 10;
-    }
-
     public String getPath()
     {
         String toRet = "";
@@ -86,7 +59,7 @@ public class Container
         while(current.hasParent())
         {
             toRet = current.getLabel() +"/"+ toRet;
-            current = current.getParent().getContains();
+            current = current.getParent();
         }
         toRet = Project.path + toRet;
         return toRet;
@@ -94,12 +67,12 @@ public class Container
 
     public boolean hasParent()
     {
-        if(this instanceof Project)
+        if(getContains() instanceof Project)
             return false;
         return true;
     }
 
-    public void setContains(Container c)
+    public void setContains(JavaObject c)
     {
         contains = c;
     }

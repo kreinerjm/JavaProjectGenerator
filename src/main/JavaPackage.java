@@ -6,18 +6,24 @@ import java.util.ArrayList;
 /**
  * Created by Jacob on 1/28/2017.
  */
-public class JavaPackage extends Container{
+public class JavaPackage extends JavaObject{
+
+    String path;
     String identifier;
-    JavaPackage parent;
 
     public JavaPackage(String identifier)
     {
         this.identifier = identifier;
     }
 
-    public ArrayList<Container> getContainers()
+    public void setPath(String path)
     {
-        return containers;
+        this.path = path;
+    }
+
+    public String getPath()
+    {
+        return path;
     }
 
 }

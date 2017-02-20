@@ -31,12 +31,15 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
     ArrayList<Button> buttons = new ArrayList<>();
     Project project;
     Container overview;
+    Inspector inspector;
 
     public GeneratorPanel() throws IOException, CloneNotSupportedException {
+        inspector = new Inspector(1024-256,0,256-1,512-8);
         project = new Project("My Project #1","C:/Users/Jacob/Desktop/TestProject/");
         overview = new Container("project overview",0,0,0,0);
         overview.setContains(project);
         currentContainer = overview;
+        focusContainer = overview;
         buttons.add(new Button("assets/variable.png",512+25,512-25-8, Button.Function.AddVariable));
         buttons.add(new Button("assets/method.png",512,512-25-8, Button.Function.AddMethod));
         buttons.add(new Button("assets/package.png",512-50,512-25-8, Button.Function.AddPackage));
@@ -72,6 +75,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
         if(view == View.Overview)
         {
+
             for(Container c : overview.getContainers())
             {
                 if(!c.equals(focusContainer) && c.isEditing())
@@ -118,10 +122,12 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 if(c.getContains() instanceof JavaClass)
                 {
                     b2d.setColor(Color.black);
-                    if(c.hasExtended())
+                    JavaClass jc = (JavaClass) c.getContains();
+                    if(jc.hasClassExtended())
                     {
-                        Container target = c.getExtended();
-                        b2d.drawLine(c.getX()+c.getWidth()/2,c.getY(),target.getX()+target.getWidth()/2,target.getY()+target.getHeight());
+                        Container source = jc.getContainer();
+                        Container target = jc.getClassExtended().getContainer();
+                        b2d.drawLine(source.getX()+source.getWidth()/2,source.getY(),target.getX()+target.getWidth()/2,target.getY()+target.getHeight());
                     }
                     b2d.setColor(Color.red);
                     int topEdge = c.getY();
@@ -158,23 +164,41 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             b2d.drawImage(b.img, b.x, b.y, 25, 25, null);
         }
 
+
+
         b2d.setColor(Color.BLACK);
         Font bold = new Font("Serif",Font.BOLD, 36);
         b2d.setFont(bold);
 
-        int offset = (int)((1.0/2.0)*b2d.getFontMetrics().stringWidth(project.getName()));
+        int offset = (int)((1.0/2.0)*b2d.getFontMetrics().stringWidth(currentContainer.getLabel()));
         int stringX = (int)((1.0/2.0)*(1024+16))-offset;
         int stringY = 30;
 
-        b2d.drawString(currentContainer.getLabel(),stringX,stringY);
+        if(focusContainer.equals(currentContainer) && currentContainer.isEditing())
+        {
+            b2d.setColor(Color.red);
+            b2d.drawString(currentContainer.getLabel(),stringX,stringY);
+            if(cursorOn)
+                b2d.fillRect(stringX + 2 * offset + 1, stringY - 27, 4, 28);
+        }
+        else
+        {
+            b2d.drawString(currentContainer.getLabel(),stringX,stringY);
+        }
+
+        b2d.setColor(Color.black);
 
         if(mouse && mouseContext == MouseContext.ClassExtension)
         {
             b2d.drawLine(focusContainer.getBottomMidpoint()[0],focusContainer.getBottomMidpoint()[1],lineX,lineY);
         }
 
+        inspector.drawInspector(focusContainer,b2d);
+
         g2d.drawImage(buffer,0,0,buffer.getWidth(),buffer.getHeight(),null);
     }
+
+
 
 
     private void handleMouse()
@@ -211,20 +235,19 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                     case AddPackage: {
                         if (view == View.Package || view == View.Overview) {
                             JavaPackage newPackage = new JavaPackage("");
-                            newPackage.setParent(currentContainer);
                             Container newContainer = new Container("", 0, 0, 50, 50);
+                            newPackage.setContainer(newContainer);
                             newContainer.setContains(newPackage);
                             currentContainer.addContainer(newContainer);
                             newContainer.setParent(currentContainer);
-                            System.out.println("adding package");
                         }
                         break;
                     }
                     case AddClass: {
                         if (view == View.Package) {
                             JavaClass newClass = new JavaClass("");
-                            newClass.setParent(currentContainer);
                             Container newContainer = new Container("", 0, 0, 50, 50);
+                            newClass.setContainer(newContainer);
                             newContainer.setContains(newClass);
                             currentContainer.addContainer(newContainer);
                             newContainer.setParent(currentContainer);
@@ -264,6 +287,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
+        boolean assigned = false;
         for(Container c : currentContainer.getContainers())
         {
             if(c.contains(e.getX(),e.getY()))
@@ -273,6 +297,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 offsetX = e.getX() - c.getX();
                 offsetY = e.getY() - c.getY();
                 mouseContext = MouseContext.ContainerMove;
+                assigned = true;
             }
             else if(c.getContains() instanceof JavaClass && c.classContainsBottom(e.getX(), e.getY()))
             {
@@ -281,8 +306,13 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 offsetX = e.getX() - c.getX();
                 offsetY = e.getY() - c.getY();
                 mouseContext = MouseContext.ClassExtension;
+                assigned = true;
                 //System.out.println("CONTAINED");
             }
+        }
+        if(!assigned)
+        {
+            focusContainer = currentContainer;
         }
     }
 
@@ -295,8 +325,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 if(c.classContainsTop(e.getX(),e.getY()))
                 {
                     JavaClass jc = (JavaClass) c.getContains();
-                    c.setExtended(focusContainer);
-                    jc.setExtends("");
+                    jc.setClassExtended((JavaClass) focusContainer.getContains());
                     c.setContains(jc);
                 }
             }

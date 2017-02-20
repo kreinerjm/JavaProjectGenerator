@@ -5,7 +5,7 @@ package main;
 /**
  * Created by Jacob on 1/28/2017.
  */
-public class Project extends Container{
+public class Project extends JavaObject{
 
     public static String path;
     String projectName;
