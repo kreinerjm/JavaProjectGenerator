@@ -44,7 +44,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         buttons.add(new Button("assets/method.png",512,512-25-8, Button.Function.AddMethod));
         buttons.add(new Button("assets/package.png",512-50,512-25-8, Button.Function.AddPackage));
         buttons.add(new Button("assets/class.png",512-25,512-25-8, Button.Function.AddClass));
-        buttons.add(new Button("assets/class.png",1024-25,512-25-8, Button.Function.GenerateProject));
+        buttons.add(new Button("assets/class.png",1024-25-256-2,512-25-8, Button.Function.GenerateProject));
 
         view = View.Overview;
 
