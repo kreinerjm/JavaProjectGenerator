@@ -35,7 +35,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
     public GeneratorPanel() throws IOException, CloneNotSupportedException {
         inspector = new Inspector(1024-256,0,256-1,512-8);
-        project = new Project("My Project #1","C:/Users/Jacob/Desktop/TestProject/");
+        project = new Project("project overview","C:/Users/Jacob/Desktop/TestProject/");
         overview = new Container("project overview",0,0,0,0);
         overview.setContains(project);
         currentContainer = overview;
@@ -97,11 +97,21 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 int stringY = c.getY() - 10;
 
 
-                if(c.equals(focusContainer) && c.isEditing()) {
-                    b2d.setColor(Color.RED);
-                    b2d.drawString(c.getLabel(),stringX,stringY);
-                    if(cursorOn)
-                        b2d.fillRect(stringX + 2 * offset + 1, stringY - 12, 2, 12);
+                if(c.equals(focusContainer)) {
+                    if(c.isEditing()) {
+                        b2d.setColor(Color.RED);
+                        b2d.drawString(c.getLabel(), stringX, stringY);
+                        if (cursorOn)
+                            b2d.fillRect(stringX + 2 * offset + 1, stringY - 12, 2, 12);
+                    }
+                    else
+                    {
+                        b2d.setColor(Color.BLACK);
+                        b2d.drawString(c.getLabel(), stringX, stringY);
+                    }
+                    b2d.setColor(Color.MAGENTA);
+                    b2d.drawRect(c.getX() - 1, c.getY() - 1, c.getWidth() + 1, c.getHeight() + 1);
+                    b2d.drawRect(c.getX() - 2, c.getY() - 2, c.getWidth() + 3, c.getHeight() + 3);
                 }
                 else{
                     b2d.setColor(Color.BLACK);
@@ -147,11 +157,21 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 int stringY = c.getY() - 10;
 
 
-                if(c.equals(focusContainer) && c.isEditing()) {
-                    b2d.setColor(Color.RED);
-                    b2d.drawString(c.getLabel(),stringX,stringY);
-                    if(cursorOn)
-                        b2d.fillRect(stringX + 2 * offset + 1, stringY - 12, 2, 12);
+                if(c.equals(focusContainer)) {
+                    if(c.isEditing()) {
+                        b2d.setColor(Color.RED);
+                        b2d.drawString(c.getLabel(), stringX, stringY);
+                        if (cursorOn)
+                            b2d.fillRect(stringX + 2 * offset + 1, stringY - 12, 2, 12);
+                    }
+                    else
+                    {
+                        b2d.setColor(Color.BLACK);
+                        b2d.drawString(c.getLabel(), stringX, stringY);
+                    }
+                    b2d.setColor(Color.MAGENTA);
+                    b2d.drawRect(c.getX() - 1, c.getY() - 1, c.getWidth() + 1, c.getHeight() + 1);
+                    b2d.drawRect(c.getX() - 2, c.getY() - 2, c.getWidth() + 3, c.getHeight() + 3);
                 }
                 else{
                     b2d.setColor(Color.BLACK);
@@ -240,6 +260,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                             newContainer.setContains(newPackage);
                             currentContainer.addContainer(newContainer);
                             newContainer.setParent(currentContainer);
+                            focusContainer = newContainer;
                         }
                         break;
                     }
@@ -251,6 +272,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                             newContainer.setContains(newClass);
                             currentContainer.addContainer(newContainer);
                             newContainer.setParent(currentContainer);
+                            focusContainer = newContainer;
                         }
                         break;
                     }
@@ -262,6 +284,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                             newContainer.setContains(newMethod);
                             currentContainer.addContainer(newContainer);
                             newContainer.setParent(currentContainer);
+                            focusContainer = newContainer;
                         }
                         break;
                     }
@@ -272,6 +295,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                             newContainer.setContains(newVariable);
                             currentContainer.addContainer(newContainer);
                             newContainer.setParent(currentContainer);
+                            focusContainer = newContainer;
                         }
                         break;
                     }
