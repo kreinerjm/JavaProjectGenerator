@@ -395,7 +395,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 //System.out.println("CONTAINED");
             }
         }
-        if(!assigned && !inspector.buttonContains(e.getX(),e.getY()))
+        if(!assigned && !inspector.contains(e.getX(),e.getY()))
         {
             focusContainer = currentContainer;
         }
