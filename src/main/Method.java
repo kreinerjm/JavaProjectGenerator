@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class Method extends JavaObject {
 
-    String returnType;
+    String returnType = "";
     Access accessModifier;
     boolean isStatic = false;
     boolean isFinal = false;
@@ -38,6 +38,8 @@ public class Method extends JavaObject {
     public void setAbstract(boolean b)
     {
         isAbstract = b;
+        if(isStatic)
+            isStatic = false;
     }
 
     public boolean isFinal()
@@ -58,9 +60,8 @@ public class Method extends JavaObject {
     public void setStatic(boolean b)
     {
         isStatic = b;
+        if(isAbstract)
+            isAbstract = false;
     }
-
-
-
 
 }

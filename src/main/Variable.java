@@ -7,7 +7,7 @@ package main;
 public class Variable extends JavaObject {
 
 
-    String type;
+    String type = "";
     boolean isFinal = false;
     boolean isStatic = false;
     String identifier;

@@ -11,7 +11,6 @@ import java.util.ArrayList;
 public class ProjectGenerator
 {
     JavaFileGenerator javaFileGenerator = new JavaFileGenerator();
-    String projectPath = Project.path;
 
     Project myProject;
     ArrayList<JavaPackage> packages = new ArrayList<>();
@@ -65,15 +64,15 @@ public class ProjectGenerator
             System.out.println(jp.getPath());
             new File(jp.getPath()).mkdirs();
         }
-        for(JavaClass jc : classes)
-        {
-            javaFileGenerator.generateJavaFile(jc);
-        }
+        generateClasses();
     }
 
     public void generateClasses()
     {
-
+        for(JavaClass jc : classes)
+        {
+            javaFileGenerator.generateJavaFile(jc);
+        }
     }
 
     public void generateProject()

@@ -27,6 +27,5 @@ public class JavaClassCreateTest
         JavaClass jc = new JavaClass("TestClass",methods,classVariables);
         JavaFileGenerator javaFileGenerator = new JavaFileGenerator();
         javaFileGenerator.generateJavaFile(jc);
-
     }
 }

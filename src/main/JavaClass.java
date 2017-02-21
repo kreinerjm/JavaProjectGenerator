@@ -12,6 +12,7 @@ public class JavaClass extends JavaObject {
     ArrayList<Variable> classVariables = new ArrayList<>();
     JavaClass classExtended;
     ArrayList<String> interfacesImpemented = new ArrayList<>();
+    boolean isInterface = false;
     boolean isAbstract = false;
     String className;
 
@@ -25,9 +26,23 @@ public class JavaClass extends JavaObject {
         this.className = className;
     }
 
+    public void setInterface(boolean b)
+    {
+        isInterface = b;
+        if(isAbstract)
+            isAbstract = false;
+    }
+
+    public boolean isInterface()
+    {
+        return isInterface;
+    }
+
     public void setAbstract(boolean b)
     {
         isAbstract = b;
+        if(isInterface)
+            isInterface = false;
     }
 
     public boolean isAbstract()

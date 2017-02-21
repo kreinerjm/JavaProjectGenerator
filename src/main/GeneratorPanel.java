@@ -16,10 +16,12 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
     ProjectGenerator generator;
     public enum View {Overview,Package,Class,Method}
     public enum MouseContext {ContainerMove,ClassExtension}
+    public enum KeyboardContext {Editor,Inspector}
     int lineX,lineY;
     MouseContext mouseContext;
+    KeyboardContext keyboardContext = KeyboardContext.Editor;
     View view;
-    int tickNum = 0;
+    static int tickNum = 0;
     private final char[] alphabet = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
     private final char[] alphabetCaps = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
     int offsetX, offsetY;
@@ -121,7 +123,6 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         }
         else
         {
-
             for(Container c : currentContainer.getContainers())
             {
                 if(!c.equals(focusContainer) && c.isEditing())
@@ -149,9 +150,45 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 }
                 if(c.getContains() instanceof Method)
                     b2d.setColor(Color.green);
+                if(c.getContains() instanceof Variable)
+                    b2d.setColor(Color.BLACK);
 
                 b2d.fillRect(c.getX(),c.getY(),c.getWidth(),c.getHeight());
                 b2d.setColor(Color.BLACK);
+
+                if(c.getContains() instanceof JavaClass)
+                {
+                    String s = "";
+                    JavaClass jc = (JavaClass)c.getContains();
+                    if(jc.isInterface())
+                    {
+                        s += "I";
+                    }
+                    else if(jc.isAbstract())
+                    {
+                        s += "A";
+                    }
+                    b2d.drawString(s,c.getX()+c.getWidth()/2-2,c.getY()+c.getWidth()/2+5);
+                }
+                if(c.getContains() instanceof Method)
+                {
+                    String s = "";
+                    Method m = (Method)c.getContains();
+                    if(m.isStatic())
+                    {
+                        s += "S";
+                    }
+                    else if(m.isAbstract())
+                    {
+                        s += "A";
+                    }
+                    if(m.isFinal())
+                    {
+                        s+= "F";
+                    }
+                    b2d.drawString(s,c.getX()+c.getWidth()/2-4,c.getY()+c.getWidth()/2+5);
+                }
+
                 int offset = (int)((1.0/2.0)*b2d.getFontMetrics().stringWidth(c.getLabel()));
                 int stringX = c.getX()+(int)((1.0/2.0)*c.getWidth())-offset;
                 int stringY = c.getY() - 10;
@@ -265,6 +302,18 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                     Variable v = (Variable)focusContainer.getContains();
                     v.setFinal(!v.isFinal());
                 }
+                break;
+            }
+            case InterfaceToggle:
+            {
+                JavaClass jc = (JavaClass)focusContainer.getContains();
+                jc.setInterface(!jc.isInterface);
+                break;
+            }
+            case StringEdit:
+            {
+                keyboardContext = KeyboardContext.Inspector;
+                inspector.stringEditing = true;
                 break;
             }
         }
@@ -395,7 +444,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 //System.out.println("CONTAINED");
             }
         }
-        if(!assigned && !inspector.contains(e.getX(),e.getY()))
+        if(!assigned && !inspector.contains(e.getX(), e.getY()))
         {
             focusContainer = currentContainer;
         }
@@ -435,28 +484,40 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
-        if(e.getKeyCode() == KeyEvent.VK_ESCAPE)
-        {
-            for(Container c : containers)
+        switch(keyboardContext) {
+            case Editor: {
+                processEditorEvent(e);
+                break;
+            }
+            case Inspector:
             {
-
+                processInspectorEvent(e);
+                break;
             }
         }
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_SHIFT)
         {
+            shift = false;
+        }
+    }
 
+    public void processEditorEvent(KeyEvent e)
+    {
+        if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
             focusContainer.setEditing(true);
             System.out.println(focusContainer.isEditing());
         }
-        if(e.getKeyCode() == KeyEvent.VK_DELETE)
-        {
+        if (e.getKeyCode() == KeyEvent.VK_DELETE) {
             containers.remove(focusContainer);
         }
 
-        if(focusContainer.isEditing()) {
-            if(e.getKeyCode() == KeyEvent.VK_ENTER)
-            {
+        if (focusContainer.isEditing()) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                 focusContainer.setEditing(false);
                 focusContainer.getContains().setLabel(focusContainer.getLabel());
             }
@@ -469,9 +530,8 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
                     shift = true;
                 }
-                if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE)
-                {
-                    focusContainer.setLabel(focusContainer.getLabel().substring(0,focusContainer.getLabel().length() - 1));
+                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                    focusContainer.setLabel(focusContainer.getLabel().substring(0, focusContainer.getLabel().length() - 1));
                 }
                 if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
                     int index = e.getKeyCode() - 0x41;
@@ -480,56 +540,107 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 if (e.getKeyCode() >= 0x30 && e.getKeyCode() <= 0x39) {
                     focusContainer.setLabel(focusContainer.getLabel() + "" + (e.getKeyCode() - 0x30));
                 }
-                if (e.getKeyCode() == KeyEvent.VK_SPACE){
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     focusContainer.setLabel(focusContainer.getLabel() + " ");
                 }
             }
 
-        }
-        else{
-            if(e.getKeyCode() == KeyEvent.VK_ENTER && focusContainer != null)
-            {
+        } else {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER && focusContainer != null) {
                 currentContainer = focusContainer;
-                if(currentContainer.getContains() instanceof JavaPackage)
-                {
+                if (currentContainer.getContains() instanceof JavaPackage) {
                     System.out.println("Switching to view package");
                     view = View.Package;
-                }
-                else if (currentContainer.getContains() instanceof JavaClass)
-                {
+                } else if (currentContainer.getContains() instanceof JavaClass) {
                     view = View.Class;
-                }
-                else if(currentContainer.getContains() instanceof Method)
-                {
+                } else if (currentContainer.getContains() instanceof Method) {
                     view = View.Method;
                 }
             }
-            if(e.getKeyCode() == KeyEvent.VK_ESCAPE && view != View.Overview)
-            {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE && view != View.Overview) {
                 currentContainer = currentContainer.getParent();
-                if(currentContainer.getContains() instanceof JavaPackage)
-                {
+                if (currentContainer.getContains() instanceof JavaPackage) {
                     System.out.println("Switching to view package");
                     view = View.Package;
-                }
-                else if (currentContainer.getContains() instanceof JavaClass)
-                {
+                } else if (currentContainer.getContains() instanceof JavaClass) {
                     view = View.Class;
-                }
-                else if(currentContainer.getContains() instanceof Method)
-                {
+                } else if (currentContainer.getContains() instanceof Method) {
                     view = View.Method;
                 }
             }
         }
-
     }
 
-    @Override
-    public void keyReleased(KeyEvent e) {
-        if(e.getKeyCode() == KeyEvent.VK_SHIFT)
+    public void processInspectorEvent(KeyEvent e)
+    {
+        if(inspector.stringEditing)
         {
-            shift = false;
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                inspector.stringEditing = false;
+                keyboardContext = KeyboardContext.Editor;
+            }
+
+            if (shift) {
+                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
+                    int index = e.getKeyCode() - 0x41;
+                    addString(""+alphabetCaps[index]);
+                }
+            } else {
+                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    shift = true;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                    removeString();
+                }
+                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
+                    int index = e.getKeyCode() - 0x41;
+                    addString(""+alphabet[index]);
+                }
+                if (e.getKeyCode() >= 0x30 && e.getKeyCode() <= 0x39) {
+                    addString("" + (e.getKeyCode() - 0x30));
+                }
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    addString(" ");
+                }
+            }
+        }
+    }
+
+    public void addString(String s)
+    {
+        if(focusContainer.getContains() instanceof Method)
+        {
+            Method m = (Method) focusContainer.getContains();
+            m.returnType += s;
+        }
+        else if(focusContainer.getContains() instanceof Variable)
+        {
+            Variable v = (Variable) focusContainer.getContains();
+            v.type += s;
+        }
+        else if(focusContainer.getContains() instanceof Project)
+        {
+            Project p = (Project) focusContainer.getContains();
+            p.path += s;
+        }
+    }
+
+    public void removeString()
+    {
+        if(focusContainer.getContains() instanceof Method)
+        {
+            Method m = (Method) focusContainer.getContains();
+            m.returnType = m.returnType.substring(0,m.returnType.length()-1);
+        }
+        else if(focusContainer.getContains() instanceof Variable)
+        {
+            Variable v = (Variable) focusContainer.getContains();
+            v.type = v.type.substring(0,v.type.length()-1);
+        }
+        else if(focusContainer.getContains() instanceof Project)
+        {
+            Project p = (Project) focusContainer.getContains();
+            p.path = p.path.substring(0,p.path.length()-1);
         }
     }
 }
