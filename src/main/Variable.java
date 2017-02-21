@@ -22,4 +22,24 @@ public class Variable extends JavaObject {
     {
         identifier = id;
     }
+
+    public void setStatic(boolean b)
+    {
+        isStatic = b;
+    }
+
+    public boolean isStatic()
+    {
+        return isStatic;
+    }
+
+    public void setFinal(boolean b)
+    {
+        isFinal = b;
+    }
+
+    public boolean isFinal()
+    {
+        return isFinal;
+    }
 }

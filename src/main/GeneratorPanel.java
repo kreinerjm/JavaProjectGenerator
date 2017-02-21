@@ -220,37 +220,60 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
 
 
-
-    private void handleMouse()
+    private void checkInspectorButtons(int x, int y)
     {
-        if(mouse) {
-            int x,y;
-            switch(mouseContext)
+        Button b = inspector.getButton(x,y);
+        switch(b.function)
+        {
+            case StaticToggle:
             {
-                case ClassExtension:
-                    x = (int) getMousePosition().getX();
-                    y = (int) getMousePosition().getY();
-                    lineX = x;
-                    lineY = y;
-                    //System.out.println("CLASS EXTENSION");
-                    break;
-                case ContainerMove:
-                    x = (int) getMousePosition().getX();
-                    y = (int) getMousePosition().getY();
-                    focusContainer.setX(x - offsetX);
-                    focusContainer.setY(y - offsetY);
-                    break;
-                default:
-                    break;
+                if(focusContainer.getContains() instanceof Method)
+                {
+                    Method m = (Method)focusContainer.getContains();
+                    m.setStatic(!m.isStatic());
+                }
+                else if(focusContainer.getContains() instanceof Variable)
+                {
+                    Variable v = (Variable)focusContainer.getContains();
+                    v.setStatic(!v.isStatic());
+                }
+                break;
             }
-
+            case AbstractToggle:
+            {
+                if(focusContainer.getContains() instanceof Method)
+                {
+                    Method m = (Method)focusContainer.getContains();
+                    m.setAbstract(!m.isAbstract());
+                }
+                else if(focusContainer.getContains() instanceof JavaClass)
+                {
+                    JavaClass jc = (JavaClass)focusContainer.getContains();
+                    jc.setAbstract(!jc.isAbstract());
+                }
+                break;
+            }
+            case FinalToggle:
+            {
+                if(focusContainer.getContains() instanceof Method)
+                {
+                    Method m = (Method)focusContainer.getContains();
+                    m.setFinal(!m.isFinal());
+                }
+                else if(focusContainer.getContains() instanceof Variable)
+                {
+                    Variable v = (Variable)focusContainer.getContains();
+                    v.setFinal(!v.isFinal());
+                }
+                break;
+            }
         }
     }
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
+    private void checkEditorButtons(int x, int y)
+    {
         for (Button b : buttons) {
-            if (b.contains(e.getX(), e.getY())) {
+            if (b.contains(x, y)) {
                 switch (b.function) {
                     case AddPackage: {
                         if (view == View.Package || view == View.Overview) {
@@ -303,9 +326,47 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                         generator = new ProjectGenerator(overview);
                         break;
                     }
-
                 }
             }
+        }
+    }
+
+
+    private void handleMouse()
+    {
+        if(mouse) {
+            int x,y;
+            switch(mouseContext)
+            {
+                case ClassExtension:
+                    x = (int) getMousePosition().getX();
+                    y = (int) getMousePosition().getY();
+                    lineX = x;
+                    lineY = y;
+                    //System.out.println("CLASS EXTENSION");
+                    break;
+                case ContainerMove:
+                    x = (int) getMousePosition().getX();
+                    y = (int) getMousePosition().getY();
+                    focusContainer.setX(x - offsetX);
+                    focusContainer.setY(y - offsetY);
+                    break;
+                default:
+                    break;
+            }
+
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if(inspector.buttonContains(e.getX(),e.getY()))
+        {
+            checkInspectorButtons(e.getX(),e.getY());
+        }
+        else
+        {
+            checkEditorButtons(e.getX(),e.getY());
         }
     }
 
@@ -334,7 +395,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 //System.out.println("CONTAINED");
             }
         }
-        if(!assigned)
+        if(!assigned && !inspector.buttonContains(e.getX(),e.getY()))
         {
             focusContainer = currentContainer;
         }
@@ -355,7 +416,6 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             }
         }
         mouse = false;
-
     }
 
     @Override

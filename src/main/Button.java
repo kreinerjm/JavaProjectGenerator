@@ -13,11 +13,16 @@ import java.net.URL;
  */
 public class Button
 {
-    public enum Function {AddPackage,AddClass,AddMethod,AddVariable,GenerateProject}
+    public enum Function {AddPackage,AddClass,AddMethod,AddVariable,GenerateProject,StaticToggle,AbstractToggle,FinalToggle}
     Function function;
     int x, y;
     ImageIcon ii;
     Image img = null;
+
+    public Button()
+    {
+
+    }
 
     public Button(String imgName,int x, int y, Function function)
     {
