@@ -15,6 +15,7 @@ public class JavaClass extends JavaObject {
     boolean isInterface = false;
     boolean isAbstract = false;
     String className;
+    Access accessModifier = Access.Public;
 
     public JavaClass(String className, ArrayList<Method> methods, ArrayList<Variable> classVariables) {
         this.methods = methods;

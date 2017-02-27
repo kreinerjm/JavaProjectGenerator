@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class Inspector
 {
     int x, y, width, height;
-    Button sToggle,fToggle,aToggle,iToggle,stringToggle;
+    Button sToggle,fToggle,aToggle,iToggle,stringToggle, publicToggle;
     boolean stringEditing = false;
 
     public Inspector(int x, int y, int width, int height)
@@ -23,7 +23,7 @@ public class Inspector
         aToggle = (new InspectorButton("assets/toggle.png",x + width - 30,0, Button.Function.AbstractToggle));
         iToggle = (new InspectorButton("assets/toggle.png",x + width - 30,0, Button.Function.InterfaceToggle));
         stringToggle = (new InspectorButton("assets/toggle.png",x + width - 30,0, Button.Function.StringEdit));
-
+        publicToggle = (new InspectorButton("assets/toggle.png",x + width - 30,0, Button.Function.AccessToggle));
     }
 
     public void drawInspector(Container focusContainer, Graphics2D b2d)
@@ -43,13 +43,13 @@ public class Inspector
             sToggle.y = -20;
             fToggle.y = -20;
             iToggle.y = -20;
+            publicToggle.y = -20;
             int fontSize = 20;
             while(b2d.getFontMetrics().stringWidth(focusContainer.getPath()) > width-20)
             {
                 fontSize--;
                 b2d.setFont(new Font("Serif",Font.BOLD, fontSize));
             }
-
             if(stringEditing)
             {
                 b2d.setColor(Color.red);
@@ -65,6 +65,7 @@ public class Inspector
             sToggle.y = -20;
             fToggle.y = -20;
             iToggle.y = -20;
+            publicToggle.y = -20;
 
 
             int fontSize = 20;
@@ -80,6 +81,7 @@ public class Inspector
         {
             aToggle.y = 40+4;
             iToggle.y = 60+4;
+            publicToggle.y = 80+4;
             sToggle.y = -20;
             fToggle.y = -20;
             stringToggle.y = - 20;
@@ -91,10 +93,12 @@ public class Inspector
                 drawRelativeString("Extends: None",10,40,b2d);
             drawRelativeString("Abstract : "+jc.isAbstract(), 10, 60, b2d);
             drawRelativeString("isInterface : "+jc.isInterface(),10,80,b2d);
+            drawRelativeString("Public : "+(jc.accessModifier== JavaObject.Access.Public),10,100,b2d);
 
 
             b2d.drawImage(aToggle.img, aToggle.x, aToggle.y, 20, 20, null);
             b2d.drawImage(iToggle.img, iToggle.x, iToggle.y, 20, 20, null);
+            b2d.drawImage(publicToggle.img, publicToggle.x, publicToggle.y,20,20,null);
         }
         else if(jo instanceof Method)
         {
@@ -102,31 +106,37 @@ public class Inspector
             sToggle.y = 40+4;
             fToggle.y = 60+4;
             stringToggle.y = 80+4;
+            publicToggle.y = 100+4;
             iToggle.y = -20;
             Method m = (Method) jo;
             drawRelativeString("Abstract : "+m.isAbstract(), 10, 40, b2d);
             drawRelativeString("Static : "+m.isStatic(), 10, 60, b2d);
             drawRelativeString("Final : "+m.isFinal(), 10, 80, b2d);
+            drawRelativeString("Public : "+(m.accessModifier== JavaObject.Access.Public),10,120,b2d);
             if(stringEditing)
                 b2d.setColor(Color.red);
             drawRelativeString("Return Type : "+m.returnType,10,100,b2d);
+
 
             b2d.drawImage(aToggle.img, aToggle.x, aToggle.y, 20, 20, null);
             b2d.drawImage(sToggle.img, sToggle.x, sToggle.y, 20, 20, null);
             b2d.drawImage(fToggle.img, fToggle.x, fToggle.y, 20, 20, null);
             b2d.drawImage(stringToggle.img, stringToggle.x, stringToggle.y,20,20,null);
+            b2d.drawImage(publicToggle.img, publicToggle.x, publicToggle.y,20,20,null);
         }
         else if(jo instanceof Variable)
         {
             sToggle.y = 20+4;
             fToggle.y = 40+4;
             stringToggle.y = 60+4;
+            publicToggle.y = 80+4;
             iToggle.y = -20;
             aToggle.y = -20;
 
             Variable v = (Variable) jo;
             drawRelativeString("Static : "+v.isStatic(), 10, 40, b2d);
             drawRelativeString("Final : "+v.isFinal(), 10, 60, b2d);
+            drawRelativeString("Public : "+(v.accessModifier== JavaObject.Access.Public),10,100,b2d);
             if(stringEditing)
                 b2d.setColor(Color.red);
             drawRelativeString("Type : "+v.type,10,80,b2d);
@@ -134,6 +144,7 @@ public class Inspector
             b2d.drawImage(sToggle.img, sToggle.x, sToggle.y, 20, 20, null);
             b2d.drawImage(fToggle.img, fToggle.x, fToggle.y, 20, 20, null);
             b2d.drawImage(stringToggle.img, stringToggle.x, stringToggle.y,20,20,null);
+            b2d.drawImage(publicToggle.img, publicToggle.x, publicToggle.y,20,20,null);
         }
     }
 
@@ -144,7 +155,7 @@ public class Inspector
 
     public boolean buttonContains(int x, int y)
     {
-        if(fToggle.contains(x,y) || sToggle.contains(x,y) || aToggle.contains(x,y) || iToggle.contains(x,y) || stringToggle.contains(x,y))
+        if(fToggle.contains(x,y) || sToggle.contains(x,y) || aToggle.contains(x,y) || iToggle.contains(x,y) || stringToggle.contains(x,y) || publicToggle.contains(x,y))
         {
             return true;
         }
@@ -172,6 +183,10 @@ public class Inspector
         else if(stringToggle.contains(x,y))
         {
             return stringToggle;
+        }
+        else if(publicToggle.contains(x,y))
+        {
+            return publicToggle;
         }
         return new Button();
     }

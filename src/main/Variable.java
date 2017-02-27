@@ -6,7 +6,7 @@ package main;
  */
 public class Variable extends JavaObject {
 
-
+    Access accessModifier = Access.Public;
     String type = "";
     boolean isFinal = false;
     boolean isStatic = false;

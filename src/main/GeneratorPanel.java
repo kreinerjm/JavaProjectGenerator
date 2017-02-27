@@ -255,259 +255,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         g2d.drawImage(buffer,0,0,buffer.getWidth(),buffer.getHeight(),null);
     }
 
-
-
-    private void checkInspectorButtons(int x, int y)
-    {
-        Button b = inspector.getButton(x,y);
-        switch(b.function)
-        {
-            case StaticToggle:
-            {
-                if(focusContainer.getContains() instanceof Method)
-                {
-                    Method m = (Method)focusContainer.getContains();
-                    m.setStatic(!m.isStatic());
-                }
-                else if(focusContainer.getContains() instanceof Variable)
-                {
-                    Variable v = (Variable)focusContainer.getContains();
-                    v.setStatic(!v.isStatic());
-                }
-                break;
-            }
-            case AbstractToggle:
-            {
-                if(focusContainer.getContains() instanceof Method)
-                {
-                    Method m = (Method)focusContainer.getContains();
-                    m.setAbstract(!m.isAbstract());
-                }
-                else if(focusContainer.getContains() instanceof JavaClass)
-                {
-                    JavaClass jc = (JavaClass)focusContainer.getContains();
-                    jc.setAbstract(!jc.isAbstract());
-                }
-                break;
-            }
-            case FinalToggle:
-            {
-                if(focusContainer.getContains() instanceof Method)
-                {
-                    Method m = (Method)focusContainer.getContains();
-                    m.setFinal(!m.isFinal());
-                }
-                else if(focusContainer.getContains() instanceof Variable)
-                {
-                    Variable v = (Variable)focusContainer.getContains();
-                    v.setFinal(!v.isFinal());
-                }
-                break;
-            }
-            case InterfaceToggle:
-            {
-                JavaClass jc = (JavaClass)focusContainer.getContains();
-                jc.setInterface(!jc.isInterface);
-                break;
-            }
-            case StringEdit:
-            {
-                keyboardContext = KeyboardContext.Inspector;
-                inspector.stringEditing = true;
-                break;
-            }
-        }
-    }
-
-    private void checkEditorButtons(int x, int y)
-    {
-        for (Button b : buttons) {
-            if (b.contains(x, y)) {
-                switch (b.function) {
-                    case AddPackage: {
-                        if (view == View.Package || view == View.Overview) {
-                            JavaPackage newPackage = new JavaPackage("");
-                            Container newContainer = new Container("", 0, 0, 50, 50);
-                            newPackage.setContainer(newContainer);
-                            newContainer.setContains(newPackage);
-                            currentContainer.addContainer(newContainer);
-                            newContainer.setParent(currentContainer);
-                            focusContainer = newContainer;
-                        }
-                        break;
-                    }
-                    case AddClass: {
-                        if (view == View.Package) {
-                            JavaClass newClass = new JavaClass("");
-                            Container newContainer = new Container("", 0, 0, 50, 50);
-                            newClass.setContainer(newContainer);
-                            newContainer.setContains(newClass);
-                            currentContainer.addContainer(newContainer);
-                            newContainer.setParent(currentContainer);
-                            focusContainer = newContainer;
-                        }
-                        break;
-                    }
-                    case AddMethod: {
-                        if (view == View.Class) {
-                            System.out.println("Method?");
-                            Method newMethod = new Method("");
-                            Container newContainer = new Container("", 0, 0, 50, 50);
-                            newContainer.setContains(newMethod);
-                            currentContainer.addContainer(newContainer);
-                            newContainer.setParent(currentContainer);
-                            focusContainer = newContainer;
-                        }
-                        break;
-                    }
-                    case AddVariable: {
-                        if (view == View.Class || view == View.Method) {
-                            Variable newVariable = new Variable("");
-                            Container newContainer = new Container("", 0, 0, 50, 50);
-                            newContainer.setContains(newVariable);
-                            currentContainer.addContainer(newContainer);
-                            newContainer.setParent(currentContainer);
-                            focusContainer = newContainer;
-                        }
-                        break;
-                    }
-                    case GenerateProject: {
-                        generator = new ProjectGenerator(overview);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-
-    private void handleMouse()
-    {
-        if(mouse) {
-            int x,y;
-            switch(mouseContext)
-            {
-                case ClassExtension:
-                    x = (int) getMousePosition().getX();
-                    y = (int) getMousePosition().getY();
-                    lineX = x;
-                    lineY = y;
-                    //System.out.println("CLASS EXTENSION");
-                    break;
-                case ContainerMove:
-                    x = (int) getMousePosition().getX();
-                    y = (int) getMousePosition().getY();
-                    focusContainer.setX(x - offsetX);
-                    focusContainer.setY(y - offsetY);
-                    break;
-                default:
-                    break;
-            }
-
-        }
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        if(inspector.buttonContains(e.getX(),e.getY()))
-        {
-            checkInspectorButtons(e.getX(),e.getY());
-        }
-        else
-        {
-            checkEditorButtons(e.getX(),e.getY());
-        }
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        boolean assigned = false;
-        for(Container c : currentContainer.getContainers())
-        {
-            if(c.contains(e.getX(),e.getY()))
-            {
-                focusContainer = c;
-                mouse = true;
-                offsetX = e.getX() - c.getX();
-                offsetY = e.getY() - c.getY();
-                mouseContext = MouseContext.ContainerMove;
-                assigned = true;
-            }
-            else if(c.getContains() instanceof JavaClass && c.classContainsBottom(e.getX(), e.getY()))
-            {
-                focusContainer = c;
-                mouse = true;
-                offsetX = e.getX() - c.getX();
-                offsetY = e.getY() - c.getY();
-                mouseContext = MouseContext.ClassExtension;
-                assigned = true;
-                //System.out.println("CONTAINED");
-            }
-        }
-        if(!assigned && !inspector.contains(e.getX(), e.getY()))
-        {
-            focusContainer = currentContainer;
-        }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        if(mouse && mouseContext == MouseContext.ClassExtension)
-        {
-            for(Container c : currentContainer.getContainers())
-            {
-                if(c.classContainsTop(e.getX(),e.getY()))
-                {
-                    JavaClass jc = (JavaClass) c.getContains();
-                    jc.setClassExtended((JavaClass) focusContainer.getContains());
-                    c.setContains(jc);
-                }
-            }
-        }
-        mouse = false;
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        switch(keyboardContext) {
-            case Editor: {
-                processEditorEvent(e);
-                break;
-            }
-            case Inspector:
-            {
-                processInspectorEvent(e);
-                break;
-            }
-        }
-
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        if(e.getKeyCode() == KeyEvent.VK_SHIFT)
-        {
-            shift = false;
-        }
-    }
-
-    public void processEditorEvent(KeyEvent e)
-    {
+    public void processEditorEvent(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
             focusContainer.setEditing(true);
             System.out.println(focusContainer.isEditing());
@@ -571,10 +319,8 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         }
     }
 
-    public void processInspectorEvent(KeyEvent e)
-    {
-        if(inspector.stringEditing)
-        {
+    public void processInspectorEvent(KeyEvent e) {
+        if (inspector.stringEditing) {
             if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                 inspector.stringEditing = false;
                 keyboardContext = KeyboardContext.Editor;
@@ -583,7 +329,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             if (shift) {
                 if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
                     int index = e.getKeyCode() - 0x41;
-                    addString(""+alphabetCaps[index]);
+                    addString("" + alphabetCaps[index]);
                 }
             } else {
                 if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
@@ -594,7 +340,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 }
                 if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
                     int index = e.getKeyCode() - 0x41;
-                    addString(""+alphabet[index]);
+                    addString("" + alphabet[index]);
                 }
                 if (e.getKeyCode() >= 0x30 && e.getKeyCode() <= 0x39) {
                     addString("" + (e.getKeyCode() - 0x30));
@@ -606,41 +352,275 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         }
     }
 
-    public void addString(String s)
-    {
-        if(focusContainer.getContains() instanceof Method)
-        {
+    public void addString(String s) {
+        if (focusContainer.getContains() instanceof Method) {
             Method m = (Method) focusContainer.getContains();
             m.returnType += s;
-        }
-        else if(focusContainer.getContains() instanceof Variable)
-        {
+        } else if (focusContainer.getContains() instanceof Variable) {
             Variable v = (Variable) focusContainer.getContains();
             v.type += s;
-        }
-        else if(focusContainer.getContains() instanceof Project)
-        {
+        } else if (focusContainer.getContains() instanceof Project) {
             Project p = (Project) focusContainer.getContains();
             p.path += s;
         }
     }
 
-    public void removeString()
-    {
-        if(focusContainer.getContains() instanceof Method)
-        {
+    public void removeString() {
+        if (focusContainer.getContains() instanceof Method) {
             Method m = (Method) focusContainer.getContains();
-            m.returnType = m.returnType.substring(0,m.returnType.length()-1);
-        }
-        else if(focusContainer.getContains() instanceof Variable)
-        {
+            m.returnType = m.returnType.substring(0, m.returnType.length() - 1);
+        } else if (focusContainer.getContains() instanceof Variable) {
             Variable v = (Variable) focusContainer.getContains();
-            v.type = v.type.substring(0,v.type.length()-1);
-        }
-        else if(focusContainer.getContains() instanceof Project)
-        {
+            v.type = v.type.substring(0, v.type.length() - 1);
+        } else if (focusContainer.getContains() instanceof Project) {
             Project p = (Project) focusContainer.getContains();
-            p.path = p.path.substring(0,p.path.length()-1);
+            p.path = p.path.substring(0, p.path.length() - 1);
         }
     }
+
+    private void checkInspectorButtons ( int x, int y)
+    {
+        Button b = inspector.getButton(x, y);
+        switch (b.function) {
+            case StaticToggle: {
+                if (focusContainer.getContains() instanceof Method) {
+                    Method m = (Method) focusContainer.getContains();
+                    m.setStatic(!m.isStatic());
+                } else if (focusContainer.getContains() instanceof Variable) {
+                    Variable v = (Variable) focusContainer.getContains();
+                    v.setStatic(!v.isStatic());
+                }
+                break;
+            }
+            case AbstractToggle: {
+                if (focusContainer.getContains() instanceof Method) {
+                    Method m = (Method) focusContainer.getContains();
+                    m.setAbstract(!m.isAbstract());
+                } else if (focusContainer.getContains() instanceof JavaClass) {
+                    JavaClass jc = (JavaClass) focusContainer.getContains();
+                    jc.setAbstract(!jc.isAbstract());
+                }
+                break;
+            }
+            case FinalToggle: {
+                if (focusContainer.getContains() instanceof Method) {
+                    Method m = (Method) focusContainer.getContains();
+                    m.setFinal(!m.isFinal());
+                } else if (focusContainer.getContains() instanceof Variable) {
+                    Variable v = (Variable) focusContainer.getContains();
+                    v.setFinal(!v.isFinal());
+                }
+                break;
+            }
+            case InterfaceToggle: {
+                JavaClass jc = (JavaClass) focusContainer.getContains();
+                jc.setInterface(!jc.isInterface);
+                break;
+            }
+            case StringEdit: {
+                keyboardContext = KeyboardContext.Inspector;
+                inspector.stringEditing = true;
+                break;
+            }
+            case AccessToggle: {
+                if (focusContainer.getContains() instanceof Method) {
+                    Method m = (Method) focusContainer.getContains();
+                    if (m.accessModifier == JavaObject.Access.Public) {
+                        m.accessModifier = JavaObject.Access.Private;
+                    } else {
+                        m.accessModifier = JavaObject.Access.Public;
+                    }
+                } else if (focusContainer.getContains() instanceof Variable) {
+                    Variable v = (Variable) focusContainer.getContains();
+                    if (v.accessModifier == JavaObject.Access.Public) {
+                        v.accessModifier = JavaObject.Access.Private;
+                    } else {
+                        v.accessModifier = JavaObject.Access.Public;
+                    }
+                } else if (focusContainer.getContains() instanceof JavaClass) {
+                    JavaClass jc = (JavaClass) focusContainer.getContains();
+                    if (jc.accessModifier == JavaObject.Access.Public) {
+                        jc.accessModifier = JavaObject.Access.Private;
+                    } else {
+                        jc.accessModifier = JavaObject.Access.Public;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    private void checkEditorButtons(int x, int y) {
+        for (Button b : buttons) {
+            if (b.contains(x, y)) {
+                switch (b.function) {
+                    case AddPackage: {
+                        if (view == View.Package || view == View.Overview) {
+                            JavaPackage newPackage = new JavaPackage("");
+                            Container newContainer = new Container("", 0, 0, 50, 50);
+                            newPackage.setContainer(newContainer);
+                            newContainer.setContains(newPackage);
+                            currentContainer.addContainer(newContainer);
+                            newContainer.setParent(currentContainer);
+                            focusContainer = newContainer;
+                        }
+                        break;
+                    }
+                    case AddClass: {
+                        if (view == View.Package) {
+                            JavaClass newClass = new JavaClass("");
+                            Container newContainer = new Container("", 0, 0, 50, 50);
+                            newClass.setContainer(newContainer);
+                            newContainer.setContains(newClass);
+                            currentContainer.addContainer(newContainer);
+                            newContainer.setParent(currentContainer);
+                            focusContainer = newContainer;
+                        }
+                        break;
+                    }
+                    case AddMethod: {
+                        if (view == View.Class) {
+                            System.out.println("Method?");
+                            Method newMethod = new Method("");
+                            Container newContainer = new Container("", 0, 0, 50, 50);
+                            newContainer.setContains(newMethod);
+                            currentContainer.addContainer(newContainer);
+                            newContainer.setParent(currentContainer);
+                            focusContainer = newContainer;
+                        }
+                        break;
+                    }
+                    case AddVariable: {
+                        if (view == View.Class || view == View.Method) {
+                            Variable newVariable = new Variable("");
+                            Container newContainer = new Container("", 0, 0, 50, 50);
+                            newContainer.setContains(newVariable);
+                            currentContainer.addContainer(newContainer);
+                            newContainer.setParent(currentContainer);
+                            focusContainer = newContainer;
+                        }
+                        break;
+                    }
+                    case GenerateProject: {
+                        generator = new ProjectGenerator(overview);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+
+    private void handleMouse() {
+        if (mouse) {
+            int x, y;
+            switch (mouseContext) {
+                case ClassExtension:
+                    x = (int) getMousePosition().getX();
+                    y = (int) getMousePosition().getY();
+                    lineX = x;
+                    lineY = y;
+                    //System.out.println("CLASS EXTENSION");
+                    break;
+                case ContainerMove:
+                    x = (int) getMousePosition().getX();
+                    y = (int) getMousePosition().getY();
+                    focusContainer.setX(x - offsetX);
+                    focusContainer.setY(y - offsetY);
+                    break;
+                default:
+                    break;
+            }
+
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (inspector.buttonContains(e.getX(), e.getY())) {
+            checkInspectorButtons(e.getX(), e.getY());
+        } else {
+            checkEditorButtons(e.getX(), e.getY());
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        boolean assigned = false;
+        for (Container c : currentContainer.getContainers()) {
+            if (c.contains(e.getX(), e.getY())) {
+                focusContainer = c;
+                mouse = true;
+                offsetX = e.getX() - c.getX();
+                offsetY = e.getY() - c.getY();
+                mouseContext = MouseContext.ContainerMove;
+                assigned = true;
+            } else if (c.getContains() instanceof JavaClass && c.classContainsBottom(e.getX(), e.getY())) {
+                focusContainer = c;
+                mouse = true;
+                offsetX = e.getX() - c.getX();
+                offsetY = e.getY() - c.getY();
+                mouseContext = MouseContext.ClassExtension;
+                assigned = true;
+                //System.out.println("CONTAINED");
+            }
+        }
+        if (!assigned && !inspector.contains(e.getX(), e.getY())) {
+            focusContainer = currentContainer;
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (mouse && mouseContext == MouseContext.ClassExtension) {
+            for (Container c : currentContainer.getContainers()) {
+                if (c.classContainsTop(e.getX(), e.getY())) {
+                    JavaClass jc = (JavaClass) c.getContains();
+                    jc.setClassExtended((JavaClass) focusContainer.getContains());
+                    c.setContains(jc);
+                }
+            }
+        }
+        mouse = false;
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (keyboardContext) {
+            case Editor: {
+                processEditorEvent(e);
+                break;
+            }
+            case Inspector: {
+                processInspectorEvent(e);
+                break;
+            }
+        }
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+            shift = false;
+        }
+    }
+
+
+
 }
