@@ -140,6 +140,15 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                         Container target = jc.getClassExtended().getContainer();
                         b2d.drawLine(source.getX()+source.getWidth()/2,source.getY(),target.getX()+target.getWidth()/2,target.getY()+target.getHeight());
                     }
+                    if(jc.interfacesImplemented.size()>0)
+                    {
+                        for(JavaClass toDo : jc.interfacesImplemented)
+                        {
+                            Container source = jc.getContainer();
+                            Container target = toDo.getContainer();
+                            b2d.drawLine(source.getX() + source.getWidth() / 2, source.getY(), target.getX() + target.getWidth() / 2, target.getY() + target.getHeight());
+                        }
+                    }
                     b2d.setColor(Color.red);
                     int topEdge = c.getY();
                     int bottomEdge = topEdge + c.getWidth();
@@ -415,6 +424,24 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             case InterfaceToggle: {
                 JavaClass jc = (JavaClass) focusContainer.getContains();
                 jc.setInterface(!jc.isInterface);
+                if(!jc.isInterface())
+                {
+                    for(Container c : currentContainer.getContainers())
+                    {
+                        if(c.getContains() instanceof JavaClass)
+                        {
+                            JavaClass toRemove = (JavaClass) c.getContains();
+                            if(toRemove.interfacesImplemented.contains(jc))
+                            {
+                                toRemove.interfacesImplemented.remove(jc);
+                                if(!toRemove.hasClassExtended())
+                                {
+                                    toRemove.setClassExtended(jc);
+                                }
+                            }
+                        }
+                    }
+                }
                 break;
             }
             case StringEdit: {
@@ -576,8 +603,16 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             for (Container c : currentContainer.getContainers()) {
                 if (c.classContainsTop(e.getX(), e.getY())) {
                     JavaClass jc = (JavaClass) c.getContains();
-                    jc.setClassExtended((JavaClass) focusContainer.getContains());
-                    c.setContains(jc);
+                    JavaClass focus = (JavaClass) focusContainer.getContains();
+                    if(focus.isInterface())
+                    {
+                        jc.interfacesImplemented.add(focus);
+                    }
+                    else
+                    {
+                        jc.setClassExtended(focus);
+                    }
+
                 }
             }
         }

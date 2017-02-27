@@ -11,7 +11,7 @@ public class JavaClass extends JavaObject {
     ArrayList<Method> methods = new ArrayList<>();
     ArrayList<Variable> classVariables = new ArrayList<>();
     JavaClass classExtended;
-    ArrayList<String> interfacesImpemented = new ArrayList<>();
+    ArrayList<JavaClass> interfacesImplemented = new ArrayList<>();
     boolean isInterface = false;
     boolean isAbstract = false;
     String className;
