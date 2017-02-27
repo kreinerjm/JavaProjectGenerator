@@ -424,18 +424,13 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             case InterfaceToggle: {
                 JavaClass jc = (JavaClass) focusContainer.getContains();
                 jc.setInterface(!jc.isInterface);
-                if(!jc.isInterface())
-                {
-                    for(Container c : currentContainer.getContainers())
-                    {
-                        if(c.getContains() instanceof JavaClass)
-                        {
+                if (!jc.isInterface()) {
+                    for (Container c : currentContainer.getContainers()) {
+                        if (c.getContains() instanceof JavaClass) {
                             JavaClass toRemove = (JavaClass) c.getContains();
-                            if(toRemove.interfacesImplemented.contains(jc))
-                            {
+                            if (toRemove.interfacesImplemented.contains(jc)) {
                                 toRemove.interfacesImplemented.remove(jc);
-                                if(!toRemove.hasClassExtended())
-                                {
+                                if (!toRemove.hasClassExtended()) {
                                     toRemove.setClassExtended(jc);
                                 }
                             }
@@ -472,6 +467,13 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                         jc.accessModifier = JavaObject.Access.Public;
                     }
                 }
+                break;
+            }
+            case ParameterToggle:
+            {
+                System.out.println("help!");
+                Variable v = (Variable)focusContainer.getContains();
+                v.setParameter(!v.isParameter());
                 break;
             }
         }

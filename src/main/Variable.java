@@ -10,6 +10,7 @@ public class Variable extends JavaObject {
     String type = "";
     boolean isFinal = false;
     boolean isStatic = false;
+    boolean isParameter = false;
     String identifier;
 
     public Variable(String type, String identifier)
@@ -41,5 +42,13 @@ public class Variable extends JavaObject {
     public boolean isFinal()
     {
         return isFinal;
+    }
+
+    public boolean isParameter() {
+        return isParameter;
+    }
+
+    public void setParameter(boolean parameter) {
+        isParameter = parameter;
     }
 }
