@@ -160,7 +160,17 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 if(c.getContains() instanceof Method)
                     b2d.setColor(Color.green);
                 if(c.getContains() instanceof Variable)
-                    b2d.setColor(Color.BLACK);
+                {
+                    if(!((Variable) c.getContains()).isParameter())
+                    {
+                        b2d.setColor(Color.BLACK);
+                    }
+                    else
+                    {
+                        b2d.setColor(Color.CYAN);
+                    }
+                }
+
 
                 b2d.fillRect(c.getX(),c.getY(),c.getWidth(),c.getHeight());
                 b2d.setColor(Color.BLACK);
@@ -471,9 +481,10 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             }
             case ParameterToggle:
             {
-                System.out.println("help!");
+
                 Variable v = (Variable)focusContainer.getContains();
-                v.setParameter(!v.isParameter());
+                if(currentContainer.getContains() instanceof Method)
+                    v.setParameter(!v.isParameter());
                 break;
             }
         }
