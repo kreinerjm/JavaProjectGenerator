@@ -80,7 +80,7 @@ public class JavaClass extends JavaObject {
 
     public String getPath()
     {
-        return path;
+        return getContainer().getPath();
     }
 
 }

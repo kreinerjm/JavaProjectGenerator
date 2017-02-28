@@ -64,4 +64,28 @@ public class Method extends JavaObject {
             isAbstract = false;
     }
 
+    public String getDeclaration()
+    {
+        String toRet = "\t";
+        String a = accessModifier == Access.Public ? "public ": "private ";
+        String s = isStatic ? "static ": "";
+        String aa = isAbstract ? "abstract ": "";
+        String f = isFinal ? "final ": "";
+        String r = returnType+" ";
+        String n = getLabel();
+        toRet+= a+s+aa+f+r+n+"(";
+        int i = 0;
+        for(Variable v : methodParameters)
+        {
+            if(i<methodParameters.size()-1)
+                toRet += v.type + " " + v.getLabel() + ",";
+            else
+                toRet += v.type + " " + v.getLabel();
+            i++;
+        }
+            toRet += ")\n\t{\n\t\t\n\t}";
+
+        return toRet;
+    }
+
 }

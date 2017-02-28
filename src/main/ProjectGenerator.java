@@ -61,8 +61,8 @@ public class ProjectGenerator
     {
         for(JavaPackage jp : packages)
         {
-            System.out.println(jp.getPath());
-            new File(jp.getPath()).mkdirs();
+            System.out.println(jp.getContainer().getPath());
+            new File(jp.getContainer().getPath()).mkdirs();
         }
         generateClasses();
     }

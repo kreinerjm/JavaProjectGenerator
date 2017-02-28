@@ -287,6 +287,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                 focusContainer.setEditing(false);
                 focusContainer.getContains().setLabel(focusContainer.getLabel());
+                System.out.println();
             }
             if (shift) {
                 if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
@@ -514,6 +515,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                             newContainer.setContains(newClass);
                             currentContainer.addContainer(newContainer);
                             newContainer.setParent(currentContainer);
+                            newClass.setPath(currentContainer.getPath()+newClass.getLabel());
                             focusContainer = newContainer;
                         }
                         break;
@@ -527,6 +529,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                             currentContainer.addContainer(newContainer);
                             newContainer.setParent(currentContainer);
                             focusContainer = newContainer;
+                            newMethod.setContainer(newContainer);
                         }
                         break;
                     }
@@ -535,6 +538,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                             Variable newVariable = new Variable("");
                             Container newContainer = new Container("", 0, 0, 50, 50);
                             newContainer.setContains(newVariable);
+                            newVariable.setContainer(newContainer);
                             currentContainer.addContainer(newContainer);
                             newContainer.setParent(currentContainer);
                             focusContainer = newContainer;
