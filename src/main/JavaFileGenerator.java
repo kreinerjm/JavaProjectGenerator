@@ -15,21 +15,12 @@ public class JavaFileGenerator {
 
     public void generateJavaFile(JavaClass jc)
     {
-        System.out.println("generating java file "+jc.getLabel()+"\n Path is "+jc.getPath());
+        System.out.println("generating java file "+jc.getLabel()+"\n\tPath is "+jc.getPath());
         String path = jc.getPath().substring(0,jc.getPath().length()-1);
-        System.out.println("augmented path is : "+path);
         StringBuilder sb = new StringBuilder();
         sb.append(path);
         sb.append(".java");
-        System.out.println("sb : "+sb.toString());
-        if(path.charAt(path.length()-1) == '/')
-        {
-            System.out.println("before:"+path);
-            path = path.substring(0,path.length()-1);
-            System.out.println("after:"+path);
-        }
         methodGenerator = new MethodGenerator();
-        System.out.println("sb2 : "+sb.toString());
         try(Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sb.toString()), "utf-8")))
         {
             //generate imports

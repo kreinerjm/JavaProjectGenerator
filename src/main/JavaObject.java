@@ -34,8 +34,4 @@ public class JavaObject
         return container.getParent();
     }
 
-    public JavaObject getContainersParentObject()
-    {
-        return getContainersParent().getContains();
-    }
 }

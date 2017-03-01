@@ -17,8 +17,4 @@ public class Project extends JavaObject{
         this.label = this.projectName;
     }
 
-    public String getName()
-    {
-        return projectName;
-    }
 }

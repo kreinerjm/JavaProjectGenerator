@@ -14,13 +14,13 @@ import java.util.ArrayList;
 class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
     ProjectGenerator generator;
-    public enum View {Overview,Package,Class,Method}
+    public enum View {Title,Overview,Package,Class,Method}
     public enum MouseContext {ContainerMove,ClassExtension}
-    public enum KeyboardContext {Editor,Inspector}
+    public enum KeyboardContext {Title,Editor,Inspector}
     int lineX,lineY;
     MouseContext mouseContext;
-    KeyboardContext keyboardContext = KeyboardContext.Editor;
-    View view;
+    KeyboardContext keyboardContext = KeyboardContext.Title;
+    View view = View.Title;
     static int tickNum = 0;
     private final char[] alphabet = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
     private final char[] alphabetCaps = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
@@ -48,8 +48,6 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         buttons.add(new Button("assets/class.png",512-25,512-25-8, Button.Function.AddClass));
         buttons.add(new Button("assets/class.png",1024-25-256-2,512-25-8, Button.Function.GenerateProject));
 
-        view = View.Overview;
-
         buffer = new BufferedImage(1024+16,512+32,BufferedImage.TYPE_INT_ARGB);
 
         this.setPreferredSize(new Dimension(1024 + 16, 512 + 32));
@@ -58,6 +56,8 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         this.addMouseListener(this);
         setOpaque(true);
     }
+
+    //--------------------GAME LOOP CALLS---------------------------
 
     public void tick()
     {
@@ -74,174 +74,161 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         Graphics2D b2d = buffer.createGraphics();
         b2d.setColor(Color.WHITE);
         b2d.fillRect(0, 0, buffer.getWidth(), buffer.getHeight());
-
-        if(view == View.Overview)
-        {
-
-            for(Container c : overview.getContainers())
-            {
-                if(!c.equals(focusContainer) && c.isEditing())
-                    c.setEditing(false);
-
-                if(c.getContains() instanceof JavaPackage)
-                    b2d.setColor(Color.blue);
-                if(c.getContains() instanceof JavaClass)
-                    b2d.setColor(Color.red);
-                if(c.getContains() instanceof Method)
-                    b2d.setColor(Color.green);
-                if(c.getContains() instanceof Variable)
-                    b2d.setColor(Color.black);
-
-                b2d.fillRect(c.getX(),c.getY(),c.getWidth(),c.getHeight());
-                b2d.setColor(Color.BLACK);
-                int offset = (int)((1.0/2.0)*b2d.getFontMetrics().stringWidth(c.getLabel()));
-                int stringX = c.getX()+(int)((1.0/2.0)*c.getWidth())-offset;
-                int stringY = c.getY() - 10;
-
-
-                if(c.equals(focusContainer)) {
-                    if(c.isEditing()) {
-                        b2d.setColor(Color.RED);
-                        b2d.drawString(c.getLabel(), stringX, stringY);
-                        if (cursorOn)
-                            b2d.fillRect(stringX + 2 * offset + 1, stringY - 12, 2, 12);
-                    }
-                    else
-                    {
-                        b2d.setColor(Color.BLACK);
-                        b2d.drawString(c.getLabel(), stringX, stringY);
-                    }
-                    b2d.setColor(Color.MAGENTA);
-                    b2d.drawRect(c.getX() - 1, c.getY() - 1, c.getWidth() + 1, c.getHeight() + 1);
-                    b2d.drawRect(c.getX() - 2, c.getY() - 2, c.getWidth() + 3, c.getHeight() + 3);
-                }
-                else{
-                    b2d.setColor(Color.BLACK);
-                    b2d.drawString(c.getLabel(), stringX, stringY);
-                }
-            }
+        if(view != View.Title) {
+            drawContainers(b2d);
+            drawButtons(b2d);
+            drawTitle(b2d);
+            drawCurrentLine(b2d);
+            inspector.drawInspector(focusContainer, b2d);
         }
-        else
-        {
-            for(Container c : currentContainer.getContainers())
-            {
-                if(!c.equals(focusContainer) && c.isEditing())
-                    c.setEditing(false);
+        else {
+            b2d.setFont(new Font("Serif",Font.BOLD, 36));
+            int offset = (int)((1.0/2.0)*b2d.getFontMetrics().stringWidth("LibGDX Project? Y / N"));
+            int stringX = (int)((1.0/2.0)*(1024+16))-offset;
+            int stringY = 30;
+            b2d.setColor(Color.BLACK);
+            b2d.drawString("LibGDX Project? Y / N",stringX,stringY);
+        }
+        g2d.drawImage(buffer,0,0,buffer.getWidth(),buffer.getHeight(),null);
+    }
 
-                if(c.getContains() instanceof JavaPackage)
-                    b2d.setColor(Color.blue);
-                if(c.getContains() instanceof JavaClass)
+    //--------------------DRAW METHODS-----------------------------
+
+    public void drawContainers(Graphics2D b2d)
+    {
+        for(Container c : currentContainer.getContainers())
+        {
+            if(!c.equals(focusContainer) && c.isEditing())
+                c.setEditing(false);
+
+            if(c.getContains() instanceof JavaPackage)
+                b2d.setColor(Color.blue);
+            if(c.getContains() instanceof JavaClass)
+            {
+                b2d.setColor(Color.black);
+                JavaClass jc = (JavaClass) c.getContains();
+                if(jc.hasClassExtended())
                 {
-                    b2d.setColor(Color.black);
-                    JavaClass jc = (JavaClass) c.getContains();
-                    if(jc.hasClassExtended())
+                    Container source = jc.getContainer();
+                    Container target = jc.getClassExtended().getContainer();
+                    b2d.drawLine(source.getX()+source.getWidth()/2,source.getY(),target.getX()+target.getWidth()/2,target.getY()+target.getHeight());
+                }
+                if(jc.interfacesImplemented.size()>0)
+                {
+                    for(JavaClass toDo : jc.interfacesImplemented)
                     {
                         Container source = jc.getContainer();
-                        Container target = jc.getClassExtended().getContainer();
-                        b2d.drawLine(source.getX()+source.getWidth()/2,source.getY(),target.getX()+target.getWidth()/2,target.getY()+target.getHeight());
+                        Container target = toDo.getContainer();
+                        b2d.drawLine(source.getX() + source.getWidth() / 2, source.getY(), target.getX() + target.getWidth() / 2, target.getY() + target.getHeight());
                     }
-                    if(jc.interfacesImplemented.size()>0)
-                    {
-                        for(JavaClass toDo : jc.interfacesImplemented)
-                        {
-                            Container source = jc.getContainer();
-                            Container target = toDo.getContainer();
-                            b2d.drawLine(source.getX() + source.getWidth() / 2, source.getY(), target.getX() + target.getWidth() / 2, target.getY() + target.getHeight());
-                        }
-                    }
-                    b2d.setColor(Color.red);
-                    int topEdge = c.getY();
-                    int bottomEdge = topEdge + c.getWidth();
-                    int xPos = c.getX() + c.getWidth()/2;
-                    int offset = 5;
-                    b2d.fillOval(xPos-offset,topEdge-offset,10,10);
-                    b2d.fillOval(xPos-offset,bottomEdge-offset,10,10);
                 }
-                if(c.getContains() instanceof Method)
-                    b2d.setColor(Color.green);
-                if(c.getContains() instanceof Variable)
+                b2d.setColor(Color.red);
+                int topEdge = c.getY();
+                int bottomEdge = topEdge + c.getWidth();
+                int xPos = c.getX() + c.getWidth()/2;
+                int offset = 5;
+                b2d.fillOval(xPos-offset,topEdge-offset,10,10);
+                b2d.fillOval(xPos-offset,bottomEdge-offset,10,10);
+            }
+            if(c.getContains() instanceof Method)
+                b2d.setColor(Color.green);
+            if(c.getContains() instanceof Variable)
+            {
+                if(!((Variable) c.getContains()).isParameter())
                 {
-                    if(!((Variable) c.getContains()).isParameter())
-                    {
-                        b2d.setColor(Color.BLACK);
-                    }
-                    else
-                    {
-                        b2d.setColor(Color.CYAN);
-                    }
+                    b2d.setColor(Color.BLACK);
                 }
-
-
-                b2d.fillRect(c.getX(),c.getY(),c.getWidth(),c.getHeight());
-                b2d.setColor(Color.BLACK);
-
-                if(c.getContains() instanceof JavaClass)
+                else
                 {
-                    String s = "";
-                    JavaClass jc = (JavaClass)c.getContains();
-                    if(jc.isInterface())
-                    {
-                        s += "I";
-                    }
-                    else if(jc.isAbstract())
-                    {
-                        s += "A";
-                    }
-                    b2d.drawString(s,c.getX()+c.getWidth()/2-2,c.getY()+c.getWidth()/2+5);
+                    b2d.setColor(Color.CYAN);
                 }
-                if(c.getContains() instanceof Method)
+            }
+
+
+            b2d.fillRect(c.getX(),c.getY(),c.getWidth(),c.getHeight());
+            b2d.setColor(Color.BLACK);
+
+            if(c.getContains() instanceof JavaClass)
+            {
+                String s = "";
+                JavaClass jc = (JavaClass)c.getContains();
+                if(jc.isInterface())
                 {
-                    String s = "";
-                    Method m = (Method)c.getContains();
-                    if(m.isStatic())
-                    {
-                        s += "S";
-                    }
-                    else if(m.isAbstract())
-                    {
-                        s += "A";
-                    }
-                    if(m.isFinal())
-                    {
-                        s+= "F";
-                    }
-                    b2d.drawString(s,c.getX()+c.getWidth()/2-4,c.getY()+c.getWidth()/2+5);
+                    s += "I";
                 }
-
-                int offset = (int)((1.0/2.0)*b2d.getFontMetrics().stringWidth(c.getLabel()));
-                int stringX = c.getX()+(int)((1.0/2.0)*c.getWidth())-offset;
-                int stringY = c.getY() - 10;
-
-
-                if(c.equals(focusContainer)) {
-                    if(c.isEditing()) {
-                        b2d.setColor(Color.RED);
-                        b2d.drawString(c.getLabel(), stringX, stringY);
-                        if (cursorOn)
-                            b2d.fillRect(stringX + 2 * offset + 1, stringY - 12, 2, 12);
-                    }
-                    else
-                    {
-                        b2d.setColor(Color.BLACK);
-                        b2d.drawString(c.getLabel(), stringX, stringY);
-                    }
-                    b2d.setColor(Color.MAGENTA);
-                    b2d.drawRect(c.getX() - 1, c.getY() - 1, c.getWidth() + 1, c.getHeight() + 1);
-                    b2d.drawRect(c.getX() - 2, c.getY() - 2, c.getWidth() + 3, c.getHeight() + 3);
+                else if(jc.isAbstract())
+                {
+                    s += "A";
                 }
-                else{
+                b2d.drawString(s,c.getX()+c.getWidth()/2-2,c.getY()+c.getWidth()/2+5);
+            }
+            if(c.getContains() instanceof Method)
+            {
+                String s = "";
+                Method m = (Method)c.getContains();
+                if(m.isStatic())
+                {
+                    s += "S";
+                }
+                else if(m.isAbstract())
+                {
+                    s += "A";
+                }
+                if(m.isFinal())
+                {
+                    s+= "F";
+                }
+                b2d.drawString(s,c.getX()+c.getWidth()/2-4,c.getY()+c.getWidth()/2+5);
+            }
+
+            int offset = (int)((1.0/2.0)*b2d.getFontMetrics().stringWidth(c.getLabel()));
+            int stringX = c.getX()+(int)((1.0/2.0)*c.getWidth())-offset;
+            int stringY = c.getY() - 10;
+
+
+            if(c.equals(focusContainer)) {
+                if(c.isEditing()) {
+                    b2d.setColor(Color.RED);
+                    b2d.drawString(c.getLabel(), stringX, stringY);
+                    if (cursorOn)
+                        b2d.fillRect(stringX + 2 * offset + 1, stringY - 12, 2, 12);
+                }
+                else
+                {
                     b2d.setColor(Color.BLACK);
                     b2d.drawString(c.getLabel(), stringX, stringY);
                 }
+                b2d.setColor(Color.MAGENTA);
+                b2d.drawRect(c.getX() - 1, c.getY() - 1, c.getWidth() + 1, c.getHeight() + 1);
+                b2d.drawRect(c.getX() - 2, c.getY() - 2, c.getWidth() + 3, c.getHeight() + 3);
+            }
+            else{
+                b2d.setColor(Color.BLACK);
+                b2d.drawString(c.getLabel(), stringX, stringY);
             }
         }
+    }
+
+    public void drawButtons(Graphics2D b2d)
+    {
         for(Button b : buttons)
         {
             b2d.drawImage(b.img, b.x, b.y, 25, 25, null);
         }
+    }
 
+    public void drawCurrentLine(Graphics2D b2d)
+    {
+        b2d.setColor(Color.black);
 
+        if(mouse && mouseContext == MouseContext.ClassExtension)
+        {
+            b2d.drawLine(focusContainer.getBottomMidpoint()[0],focusContainer.getBottomMidpoint()[1],lineX,lineY);
+        }
+    }
 
+    public void drawTitle(Graphics2D b2d)
+    {
         b2d.setColor(Color.BLACK);
         Font bold = new Font("Serif",Font.BOLD, 36);
         b2d.setFont(bold);
@@ -261,144 +248,12 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         {
             b2d.drawString(currentContainer.getLabel(),stringX,stringY);
         }
-
-        b2d.setColor(Color.black);
-
-        if(mouse && mouseContext == MouseContext.ClassExtension)
-        {
-            b2d.drawLine(focusContainer.getBottomMidpoint()[0],focusContainer.getBottomMidpoint()[1],lineX,lineY);
-        }
-
-        inspector.drawInspector(focusContainer,b2d);
-
-        g2d.drawImage(buffer,0,0,buffer.getWidth(),buffer.getHeight(),null);
     }
 
-    public void processEditorEvent(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-            focusContainer.setEditing(true);
-            System.out.println(focusContainer.isEditing());
-        }
-        if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-            containers.remove(focusContainer);
-        }
 
-        if (focusContainer.isEditing()) {
-            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                focusContainer.setEditing(false);
-                focusContainer.getContains().setLabel(focusContainer.getLabel());
-                System.out.println();
-            }
-            if (shift) {
-                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
-                    int index = e.getKeyCode() - 0x41;
-                    focusContainer.setLabel(focusContainer.getLabel() + alphabetCaps[index]);
-                }
-            } else {
-                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-                    shift = true;
-                }
-                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-                    focusContainer.setLabel(focusContainer.getLabel().substring(0, focusContainer.getLabel().length() - 1));
-                }
-                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
-                    int index = e.getKeyCode() - 0x41;
-                    focusContainer.setLabel(focusContainer.getLabel() + alphabet[index]);
-                }
-                if (e.getKeyCode() >= 0x30 && e.getKeyCode() <= 0x39) {
-                    focusContainer.setLabel(focusContainer.getLabel() + "" + (e.getKeyCode() - 0x30));
-                }
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    focusContainer.setLabel(focusContainer.getLabel() + " ");
-                }
-            }
+    //--------------------MOUSE HANDLING--------------------------
 
-        } else {
-            if (e.getKeyCode() == KeyEvent.VK_ENTER && focusContainer != null) {
-                currentContainer = focusContainer;
-                if (currentContainer.getContains() instanceof JavaPackage) {
-                    System.out.println("Switching to view package");
-                    view = View.Package;
-                } else if (currentContainer.getContains() instanceof JavaClass) {
-                    view = View.Class;
-                } else if (currentContainer.getContains() instanceof Method) {
-                    view = View.Method;
-                }
-            }
-            if (e.getKeyCode() == KeyEvent.VK_ESCAPE && view != View.Overview) {
-                currentContainer = currentContainer.getParent();
-                if (currentContainer.getContains() instanceof JavaPackage) {
-                    System.out.println("Switching to view package");
-                    view = View.Package;
-                } else if (currentContainer.getContains() instanceof JavaClass) {
-                    view = View.Class;
-                } else if (currentContainer.getContains() instanceof Method) {
-                    view = View.Method;
-                }
-            }
-        }
-    }
-
-    public void processInspectorEvent(KeyEvent e) {
-        if (inspector.stringEditing) {
-            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                inspector.stringEditing = false;
-                keyboardContext = KeyboardContext.Editor;
-            }
-
-            if (shift) {
-                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
-                    int index = e.getKeyCode() - 0x41;
-                    addString("" + alphabetCaps[index]);
-                }
-            } else {
-                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
-                    shift = true;
-                }
-                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-                    removeString();
-                }
-                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
-                    int index = e.getKeyCode() - 0x41;
-                    addString("" + alphabet[index]);
-                }
-                if (e.getKeyCode() >= 0x30 && e.getKeyCode() <= 0x39) {
-                    addString("" + (e.getKeyCode() - 0x30));
-                }
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    addString(" ");
-                }
-            }
-        }
-    }
-
-    public void addString(String s) {
-        if (focusContainer.getContains() instanceof Method) {
-            Method m = (Method) focusContainer.getContains();
-            m.returnType += s;
-        } else if (focusContainer.getContains() instanceof Variable) {
-            Variable v = (Variable) focusContainer.getContains();
-            v.type += s;
-        } else if (focusContainer.getContains() instanceof Project) {
-            Project p = (Project) focusContainer.getContains();
-            p.path += s;
-        }
-    }
-
-    public void removeString() {
-        if (focusContainer.getContains() instanceof Method) {
-            Method m = (Method) focusContainer.getContains();
-            m.returnType = m.returnType.substring(0, m.returnType.length() - 1);
-        } else if (focusContainer.getContains() instanceof Variable) {
-            Variable v = (Variable) focusContainer.getContains();
-            v.type = v.type.substring(0, v.type.length() - 1);
-        } else if (focusContainer.getContains() instanceof Project) {
-            Project p = (Project) focusContainer.getContains();
-            p.path = p.path.substring(0, p.path.length() - 1);
-        }
-    }
-
-    private void checkInspectorButtons ( int x, int y)
+    private void checkInspectorButtons (int x, int y)
     {
         Button b = inspector.getButton(x, y);
         switch (b.function) {
@@ -508,7 +363,7 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                         break;
                     }
                     case AddClass: {
-                        if (view == View.Package) {
+                        if (view == View.Package || view == View.Overview) {
                             JavaClass newClass = new JavaClass("");
                             Container newContainer = new Container("", 0, 0, 50, 50);
                             newClass.setContainer(newContainer);
@@ -554,7 +409,6 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         }
     }
 
-
     private void handleMouse() {
         if (mouse) {
             int x, y;
@@ -585,6 +439,19 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
             checkInspectorButtons(e.getX(), e.getY());
         } else {
             checkEditorButtons(e.getX(), e.getY());
+        }
+        if(SwingUtilities.isRightMouseButton(e) && view != View.Overview)
+        {
+            currentContainer = currentContainer.getParent();
+            updateView();
+        }
+        else if (e.getClickCount() == 2 && !e.isConsumed()) {
+            e.consume();
+            if(focusContainer.contains(e.getX(),e.getY()))
+            {
+                currentContainer = focusContainer;
+                updateView();
+            }
         }
     }
 
@@ -646,6 +513,131 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
 
     }
 
+    //--------------------KEY HANDLING-----------------------------
+
+    public void processEditorEvent(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+            focusContainer.setEditing(true);
+        }
+        if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+            containers.remove(focusContainer);
+        }
+
+        if (focusContainer.isEditing()) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                focusContainer.setEditing(false);
+                focusContainer.getContains().setLabel(focusContainer.getLabel());
+                System.out.println();
+            }
+            if (shift) {
+                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
+                    int index = e.getKeyCode() - 0x41;
+                    focusContainer.setLabel(focusContainer.getLabel() + alphabetCaps[index]);
+                }
+            } else {
+                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    shift = true;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                    focusContainer.setLabel(focusContainer.getLabel().substring(0, focusContainer.getLabel().length() - 1));
+                }
+                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
+                    int index = e.getKeyCode() - 0x41;
+                    focusContainer.setLabel(focusContainer.getLabel() + alphabet[index]);
+                }
+                if (e.getKeyCode() >= 0x30 && e.getKeyCode() <= 0x39) {
+                    focusContainer.setLabel(focusContainer.getLabel() + "" + (e.getKeyCode() - 0x30));
+                }
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    focusContainer.setLabel(focusContainer.getLabel() + " ");
+                }
+                if (e.getKeyCode() == KeyEvent.VK_SLASH)
+                {
+                    focusContainer.setLabel(focusContainer.getLabel() + "/");
+                }
+                if(e.getKeyCode() == KeyEvent.VK_BRACELEFT)
+                {
+                    focusContainer.setLabel(focusContainer.getLabel() + "[");
+                }
+                if(e.getKeyCode() == KeyEvent.VK_BRACERIGHT)
+                {
+                    focusContainer.setLabel(focusContainer.getLabel() + "]");
+                }
+            }
+
+        } else {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER && focusContainer != null) {
+                currentContainer = focusContainer;
+                updateView();
+            }
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE && view != View.Overview) {
+                currentContainer = currentContainer.getParent();
+                updateView();
+            }
+        }
+    }
+
+    public void processInspectorEvent(KeyEvent e) {
+        if (inspector.stringEditing) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                inspector.stringEditing = false;
+                keyboardContext = KeyboardContext.Editor;
+            }
+
+            if (shift) {
+                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
+                    int index = e.getKeyCode() - 0x41;
+                    addString("" + alphabetCaps[index]);
+                }
+                if(e.getKeyCode() == KeyEvent.VK_BRACELEFT)
+                {
+                    addString("{");
+                }
+                if(e.getKeyCode() == KeyEvent.VK_BRACERIGHT)
+                {
+                    addString("}");
+                }
+                if(e.getKeyCode() == KeyEvent.VK_PERIOD)
+                {
+                    addString("<");
+                }
+                if(e.getKeyCode() == KeyEvent.VK_COMMA)
+                {
+                    addString(">");
+                }
+            } else {
+                if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                    shift = true;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                    removeString();
+                }
+                if (e.getKeyCode() >= 0x41 && e.getKeyCode() <= 0x5A) {
+                    int index = e.getKeyCode() - 0x41;
+                    addString("" + alphabet[index]);
+                }
+                if (e.getKeyCode() >= 0x30 && e.getKeyCode() <= 0x39) {
+                    addString("" + (e.getKeyCode() - 0x30));
+                }
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    addString(" ");
+                }
+                if (e.getKeyCode() == KeyEvent.VK_SLASH)
+                {
+                    addString("/");
+                }
+                if(e.getKeyCode() == KeyEvent.VK_BRACELEFT)
+                {
+                    addString("[");
+                }
+                if(e.getKeyCode() == KeyEvent.VK_BRACERIGHT)
+                {
+                    addString("]");
+                }
+            }
+        }
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
 
@@ -662,6 +654,22 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
                 processInspectorEvent(e);
                 break;
             }
+            case Title: {
+                if(e.getKeyCode() == KeyEvent.VK_Y)
+                {
+                    try {
+                        Process proc = Runtime.getRuntime().exec("java -jar gdx-setup.jar");
+                        proc.waitFor();
+                    }catch(Exception ee){System.out.println(ee.getClass().toString());}
+                    view = View.Overview;
+                    keyboardContext = KeyboardContext.Editor;
+                }
+                else if(e.getKeyCode() == KeyEvent.VK_N)
+                {
+                    view = View.Overview;
+                    keyboardContext = KeyboardContext.Editor;
+                }
+            }
         }
 
     }
@@ -673,6 +681,47 @@ class GeneratorPanel extends JPanel implements MouseListener, KeyListener {
         }
     }
 
+    //---------------------UTILITY METHODS------------------------
+
+    public void addString(String s) {
+        if (focusContainer.getContains() instanceof Method) {
+            Method m = (Method) focusContainer.getContains();
+            m.returnType += s;
+        } else if (focusContainer.getContains() instanceof Variable) {
+            Variable v = (Variable) focusContainer.getContains();
+            v.type += s;
+        } else if (focusContainer.getContains() instanceof Project) {
+            Project p = (Project) focusContainer.getContains();
+            p.path += s;
+        }
+    }
+
+    public void removeString() {
+        if (focusContainer.getContains() instanceof Method) {
+            Method m = (Method) focusContainer.getContains();
+            m.returnType = m.returnType.substring(0, m.returnType.length() - 1);
+        } else if (focusContainer.getContains() instanceof Variable) {
+            Variable v = (Variable) focusContainer.getContains();
+            v.type = v.type.substring(0, v.type.length() - 1);
+        } else if (focusContainer.getContains() instanceof Project) {
+            Project p = (Project) focusContainer.getContains();
+            p.path = p.path.substring(0, p.path.length() - 1);
+        }
+    }
+
+    public void updateView()
+    {
+        if (currentContainer.getContains() instanceof JavaPackage) {
+            System.out.println("Switching to view package");
+            view = View.Package;
+        } else if (currentContainer.getContains() instanceof JavaClass) {
+            view = View.Class;
+        } else if (currentContainer.getContains() instanceof Method) {
+            view = View.Method;
+        }else if (currentContainer.getContains() instanceof Project) {
+            view = View.Overview;
+        }
+    }
 
 
 }

@@ -154,12 +154,4 @@ public class Container
         this.y = y;
     }
 
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
 }

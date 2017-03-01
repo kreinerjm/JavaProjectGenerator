@@ -16,14 +16,5 @@ public class JavaPackage extends JavaObject{
         this.identifier = identifier;
     }
 
-    public void setPath(String path)
-    {
-        this.path = path;
-    }
-
-    public String getPath()
-    {
-        return path;
-    }
 
 }
